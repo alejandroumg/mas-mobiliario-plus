@@ -60,8 +60,31 @@ class MovimientoInventarioViewSet(viewsets.ModelViewSet):
             producto.cantidad_disponible -= cantidad
 
         elif tipo == 'devolucion':
-            if cantidad > cantidad_en_uso:
-                raise ValidationError('No puedes devolver más cantidad de la que está en uso')
+            observaciones = serializer.validated_data.get('observaciones', '')
+
+            if 'alquiler No.' in observaciones:
+                salidas_alquiler = MovimientoInventario.objects.filter(
+                    producto=producto,
+                    tipo='salida',
+                    observaciones=observaciones.replace('Devolución por', 'Salida por')
+                )
+
+                devoluciones_alquiler = MovimientoInventario.objects.filter(
+                    producto=producto,
+                    tipo='devolucion',
+                    observaciones=observaciones
+                )
+
+                total_salidas_alquiler = sum(m.cantidad for m in salidas_alquiler)
+                total_devoluciones_alquiler = sum(m.cantidad for m in devoluciones_alquiler)
+
+                cantidad_pendiente = total_salidas_alquiler - total_devoluciones_alquiler
+
+                if cantidad > cantidad_pendiente:
+                    raise ValidationError('No puedes devolver más cantidad de la que salió en este alquiler')
+            else:
+                if cantidad > cantidad_en_uso:
+                    raise ValidationError('No puedes devolver más cantidad de la que está en uso')
 
             producto.cantidad_disponible += cantidad
 

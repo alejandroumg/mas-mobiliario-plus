@@ -10,15 +10,17 @@ function InventoryList() {
   const [productos, setProductos] = useState([])
   const [categorias, setCategorias] = useState([])
   const [movimientos, setMovimientos] = useState([])
+  const [alquileres, setAlquileres] = useState([])
   const [pantalla, setPantalla] = useState('listado')
-  const [historialFiltro, setHistorialFiltro] = useState({
-    productoId: '',
-    tipo: '',
-  })
 
   const [busqueda, setBusqueda] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('')
+
+  const [historialFiltro, setHistorialFiltro] = useState({
+    productoId: '',
+    tipo: '',
+  })
 
   useEffect(() => {
     cargarInventario()
@@ -28,10 +30,12 @@ function InventoryList() {
     const resProductos = await axios.get(`${API}/productos/`)
     const resCategorias = await axios.get(`${API}/categorias-producto/`)
     const resMovimientos = await axios.get(`${API}/movimientos-inventario/`)
+    const resAlquileres = await axios.get(`${API}/alquileres/`)
 
     setProductos(resProductos.data)
     setCategorias(resCategorias.data)
     setMovimientos(resMovimientos.data)
+    setAlquileres(resAlquileres.data)
   }
 
   const categoriasMap = Object.fromEntries(
@@ -42,10 +46,20 @@ function InventoryList() {
     productos.map((producto) => [producto.id, producto.nombre])
   )
 
+  const formatearNoAlquiler = (id) => String(id).padStart(4, '0')
+
   const obtenerCantidadPorTipo = (productoId, tipo) => {
     return movimientos
       .filter((m) => m.producto === productoId && m.tipo === tipo)
       .reduce((total, m) => total + m.cantidad, 0)
+  }
+
+  const obtenerEnUsoActual = (productoId) => {
+    return alquileres
+      .filter((alquiler) => alquiler.estado === 'confirmado')
+      .flatMap((alquiler) => alquiler.detalles || [])
+      .filter((detalle) => detalle.producto === productoId)
+      .reduce((total, detalle) => total + detalle.cantidad, 0)
   }
 
   const construirFilasInventario = () => {
@@ -55,11 +69,8 @@ function InventoryList() {
       const categoria = categoriasMap[producto.categoria] || 'Sin categoría'
       const observaciones = producto.observaciones || 'Sin observaciones'
 
-      const salidas = obtenerCantidadPorTipo(producto.id, 'salida')
-      const devoluciones = obtenerCantidadPorTipo(producto.id, 'devolucion')
+      const enUso = obtenerEnUsoActual(producto.id)
       const danados = obtenerCantidadPorTipo(producto.id, 'danado')
-
-      const enUso = Math.max(salidas - devoluciones, 0)
 
       if (producto.cantidad_disponible > 0) {
         filas.push({
@@ -119,7 +130,34 @@ function InventoryList() {
     return coincideBusqueda && coincideCategoria && coincideEstado
   })
 
-  const disponibles = filasInventario.filter((fila) => fila.estado === 'disponible').length
+  const movimientosFiltrados = movimientos.filter((movimiento) => {
+    const coincideProducto =
+      historialFiltro.productoId === '' ||
+      movimiento.producto === historialFiltro.productoId
+
+    const coincideTipo =
+      historialFiltro.tipo === '' || movimiento.tipo === historialFiltro.tipo
+
+    return coincideProducto && coincideTipo
+  })
+
+  const alquileresEnUsoFiltrados = alquileres
+    .filter((alquiler) => alquiler.estado === 'confirmado')
+    .flatMap((alquiler) =>
+      (alquiler.detalles || [])
+        .filter((detalle) =>
+          historialFiltro.productoId === '' ||
+          detalle.producto === historialFiltro.productoId
+        )
+        .map((detalle) => ({
+          id: `${alquiler.id}-${detalle.id}`,
+          noAlquiler: formatearNoAlquiler(alquiler.id),
+          producto: productosMap[detalle.producto] || 'Producto no encontrado',
+          cantidad: detalle.cantidad,
+          fecha: alquiler.fecha_evento,
+          responsable: alquiler.responsable || 'Sin responsable',
+        }))
+    )
 
   const abrirHistorialFiltrado = (productoId, tipo) => {
     setHistorialFiltro({
@@ -130,15 +168,7 @@ function InventoryList() {
     setPantalla('historial')
   }
 
-  const movimientosFiltrados = movimientos.filter((movimiento) => {
-    const coincideProducto =
-      historialFiltro.productoId === '' || movimiento.producto === historialFiltro.productoId
-
-    const coincideTipo =
-      historialFiltro.tipo === '' || movimiento.tipo === historialFiltro.tipo
-
-    return coincideProducto && coincideTipo
-  })
+  const disponibles = productos.filter((p) => p.cantidad_disponible > 0).length
 
   if (pantalla === 'registro') {
     return (
@@ -168,46 +198,88 @@ function InventoryList() {
         </button>
 
         <div className="page-title">
-          <h1>Historial de Movimientos de Inventario</h1>
+          <h1>
+            {historialFiltro.tipo === 'en_uso'
+              ? 'Productos Actualmente en Uso'
+              : 'Historial de Movimientos de Inventario'}
+          </h1>
         </div>
 
-        {historialFiltro.tipo && (
-          <p className="history-filter-label">
-            Mostrando movimientos filtrados: {historialFiltro.tipo === 'salida' ? 'En uso' : historialFiltro.tipo}
-          </p>
+        {historialFiltro.tipo === 'en_uso' && (
+          <>
+            <p className="history-filter-label">
+              Mostrando alquileres activos confirmados
+            </p>
+
+            <section className="table-card">
+              <table>
+                <thead>
+                  <tr>
+                    <th>No. alquiler</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Fecha evento</th>
+                    <th>Responsable</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {alquileresEnUsoFiltrados.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="empty">
+                        No hay productos actualmente en uso
+                      </td>
+                    </tr>
+                  ) : (
+                    alquileresEnUsoFiltrados.map((item) => (
+                      <tr key={item.id}>
+                        <td>{item.noAlquiler}</td>
+                        <td>{item.producto}</td>
+                        <td>{item.cantidad}</td>
+                        <td>{item.fecha}</td>
+                        <td>{item.responsable}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </section>
+          </>
         )}
 
-        <section className="table-card">
-          <table>
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Tipo</th>
-                <th>Cantidad</th>
-                <th>Observaciones</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {movimientosFiltrados.length === 0 ? (
+        {historialFiltro.tipo !== 'en_uso' && (
+          <section className="table-card">
+            <table>
+              <thead>
                 <tr>
-                  <td colSpan="4" className="empty">
-                    Aún no hay movimientos registrados
-                  </td>
+                  <th>Producto</th>
+                  <th>Tipo</th>
+                  <th>Cantidad</th>
+                  <th>Observaciones</th>
                 </tr>
-              ) : (
-                movimientosFiltrados.map((movimiento) => (
-                  <tr key={movimiento.id}>
-                    <td>{productosMap[movimiento.producto] || 'Producto no encontrado'}</td>
-                    <td>{movimiento.tipo}</td>
-                    <td>{movimiento.cantidad}</td>
-                    <td>{movimiento.observaciones || 'Sin observaciones'}</td>
+              </thead>
+
+              <tbody>
+                {movimientosFiltrados.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="empty">
+                      Aún no hay movimientos registrados
+                    </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </section>
+                ) : (
+                  movimientosFiltrados.map((movimiento) => (
+                    <tr key={movimiento.id}>
+                      <td>{productosMap[movimiento.producto] || 'Producto no encontrado'}</td>
+                      <td>{movimiento.tipo}</td>
+                      <td>{movimiento.cantidad}</td>
+                      <td>{movimiento.observaciones || 'Sin observaciones'}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </section>
+        )}
       </>
     )
   }
@@ -314,7 +386,7 @@ function InventoryList() {
                     {fila.estado === 'en_uso' ? (
                       <button
                         className="inventory-status en_uso status-click"
-                        onClick={() => abrirHistorialFiltrado(fila.productoId, 'salida')}
+                        onClick={() => abrirHistorialFiltrado(fila.productoId, 'en_uso')}
                       >
                         En uso +
                       </button>
