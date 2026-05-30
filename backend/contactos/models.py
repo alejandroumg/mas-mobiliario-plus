@@ -52,3 +52,27 @@ class ObservacionContacto(models.Model):
 
     def __str__(self):
         return f"Observación de {self.contacto.nombre}"
+
+
+class InteraccionContacto(models.Model):
+    MEDIOS = [
+        ('whatsapp', 'WhatsApp'),
+        ('llamada', 'Llamada'),
+        ('correo', 'Correo electrónico'),
+        ('presencial', 'Presencial'),
+        ('otro', 'Otro'),
+    ]
+
+    contacto = models.ForeignKey(
+        Contacto,
+        on_delete=models.CASCADE,
+        related_name='interacciones'
+    )
+    medio = models.CharField(max_length=20, choices=MEDIOS)
+    motivo = models.CharField(max_length=150)
+    descripcion = models.TextField()
+    responsable = models.CharField(max_length=100, blank=True, null=True)
+    fecha_interaccion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.contacto.nombre} - {self.medio}"

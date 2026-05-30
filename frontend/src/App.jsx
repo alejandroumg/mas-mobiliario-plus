@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { User, Calendar, Plus, Eye, Pencil, Lock } from 'lucide-react'
+import { User, Calendar, Plus, Eye, Pencil, Lock, Unlock } from 'lucide-react'
 import logo from './assets/logo.png'
 import ContactForm from './ContactForm'
 import ContactDetail from './ContactDetail'
@@ -56,16 +56,19 @@ function App() {
     return coincideBusqueda && coincideEstado && coincideCategoria
   })
 
-  const desactivarContacto = async (id) => {
-    const confirmar = confirm('¿Deseas desactivar este contacto?')
-    if (!confirmar) return
+  const cambiarEstadoContacto = async (contacto) => {
+    const nuevoEstado = contacto.estado === 'activo' ? 'inactivo' : 'activo'
 
-    await axios.patch(`${API}/contactos/${id}/`, {
-      estado: 'inactivo',
-    })
+    try {
+      await axios.patch(`${API}/contactos/${contacto.id}/`, {
+        estado: nuevoEstado,
+      })
 
-    await cargarDatos()
-    alert('Contacto desactivado correctamente')
+      await cargarDatos()
+    } catch (error) {
+      console.error(error.response?.data || error)
+      alert('No se pudo cambiar el estado del contacto')
+    }
   }
 
   return (
@@ -280,11 +283,23 @@ function App() {
                           </button>
 
                           <button
-                            className="icon-action-btn danger-icon-btn"
-                            data-tooltip="Desactivar contacto"
-                            onClick={() => desactivarContacto(contacto.id)}
+                            className={`icon-action-btn ${
+                              contacto.estado === 'activo'
+                                ? 'danger-icon-btn'
+                                : 'success-icon-btn'
+                            }`}
+                            data-tooltip={
+                              contacto.estado === 'activo'
+                                ? 'Desactivar contacto'
+                                : 'Activar contacto'
+                            }
+                            onClick={() => cambiarEstadoContacto(contacto)}
                           >
-                            <Lock size={18} />
+                            {contacto.estado === 'activo' ? (
+                              <Lock size={18} />
+                            ) : (
+                              <Unlock size={18} />
+                            )}
                           </button>
                         </td>
                       </tr>

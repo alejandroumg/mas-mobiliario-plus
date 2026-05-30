@@ -990,3 +990,181 @@ td {
 .observations-field {
   margin-top: 18px;
 }
+
+.interactions-section {
+  margin-top: 24px;
+  max-width: 750px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+}
+
+.interactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.interactions-header .add-item-btn {
+  margin-top: 0;
+}
+
+.interaction-form {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.interaction-form input,
+.interaction-form select,
+.interaction-form textarea {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.interaction-form textarea {
+  min-height: 90px;
+}
+
+.interaction-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.interaction-item svg {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.interaction-item p {
+  margin: 6px 0;
+}
+
+.interaction-item small {
+  color: #6b7280;
+}
+
+.contact-rentals-section {
+  margin-top: 24px;
+  max-width: 750px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+}
+
+.contact-rentals-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.contact-rental-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.contact-rental-item svg {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.contact-rental-item p {
+  margin: 6px 0 10px;
+  color: #6b7280;
+}
+
+.contact-rental-status {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.contact-rental-status.pendiente {
+  background: #fff7ed;
+  color: #f59e0b;
+}
+
+.contact-rental-status.confirmado {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.contact-rental-status.en_curso {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.contact-rental-status.finalizado {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.contact-rental-status.cancelado {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.contact-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.contact-detail-layout .detail-card {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.contact-detail-layout .contact-rentals-section {
+  width: 100%;
+  max-width: none;
+  margin-top: 0;
+}
+
+.interactions-section {
+  width: 100%;
+  max-width: none;
+}
+
+@media (max-width: 950px) {
+  .contact-detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-detail-layout .contact-rentals-section {
+    margin-top: 0;
+  }
+}
+
+.success-icon-btn {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.success-icon-btn:hover {
+  background: #bbf7d0;
+}

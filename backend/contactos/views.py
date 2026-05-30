@@ -1,10 +1,11 @@
 from rest_framework import viewsets
-from .models import Contacto, CategoriaContacto, EtiquetaContacto, ObservacionContacto
+from .models import Contacto, CategoriaContacto, EtiquetaContacto, ObservacionContacto, InteraccionContacto
 from .serializers import (
     ContactoSerializer,
     CategoriaContactoSerializer,
     EtiquetaContactoSerializer,
-    ObservacionContactoSerializer
+    ObservacionContactoSerializer,
+    InteraccionContactoSerializer
 )
 
 
@@ -26,3 +27,8 @@ class EtiquetaContactoViewSet(viewsets.ModelViewSet):
 class ObservacionContactoViewSet(viewsets.ModelViewSet):
     queryset = ObservacionContacto.objects.all().order_by('-creado_en')
     serializer_class = ObservacionContactoSerializer
+
+
+class InteraccionContactoViewSet(viewsets.ModelViewSet):
+    queryset = InteraccionContacto.objects.all().order_by('-fecha_interaccion')
+    serializer_class = InteraccionContactoSerializer
