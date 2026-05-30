@@ -27,6 +27,14 @@ class AlquilerSerializer(serializers.ModelSerializer):
         model = Alquiler
         fields = '__all__'
 
+    def validate_cliente(self, cliente):
+        if cliente.estado == 'inactivo':
+            raise serializers.ValidationError(
+                'No puedes crear un alquiler para un cliente inactivo'
+            )
+
+        return cliente
+
 
 class MovimientoInventarioSerializer(serializers.ModelSerializer):
     class Meta:

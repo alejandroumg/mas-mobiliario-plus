@@ -595,33 +595,38 @@ td {
 
 .rentals-clean-table th:nth-child(1),
 .rentals-clean-table td:nth-child(1) {
-  width: 12%;
+  width: 10%;
 }
 
 .rentals-clean-table th:nth-child(2),
 .rentals-clean-table td:nth-child(2) {
-  width: 22%;
+  width: 18%;
 }
 
 .rentals-clean-table th:nth-child(3),
 .rentals-clean-table td:nth-child(3) {
-  width: 18%;
+  width: 15%;
 }
 
 .rentals-clean-table th:nth-child(4),
 .rentals-clean-table td:nth-child(4) {
-  width: 16%;
-  text-align: center;
+  width: 15%;
 }
 
 .rentals-clean-table th:nth-child(5),
 .rentals-clean-table td:nth-child(5) {
-  width: 15%;
+  width: 14%;
+  text-align: center;
 }
 
 .rentals-clean-table th:nth-child(6),
 .rentals-clean-table td:nth-child(6) {
-  width: 17%;
+  width: 14%;
+}
+
+.rentals-clean-table th:nth-child(7),
+.rentals-clean-table td:nth-child(7) {
+  width: 14%;
 }
 
 .rentals-clean-table th {
@@ -769,33 +774,38 @@ td {
 
 .rentals-clean-table th:nth-child(1),
 .rentals-clean-table td:nth-child(1) {
-  width: 12%;
+  width: 10%;
 }
 
 .rentals-clean-table th:nth-child(2),
 .rentals-clean-table td:nth-child(2) {
-  width: 22%;
+  width: 18%;
 }
 
 .rentals-clean-table th:nth-child(3),
 .rentals-clean-table td:nth-child(3) {
-  width: 18%;
+  width: 15%;
 }
 
 .rentals-clean-table th:nth-child(4),
 .rentals-clean-table td:nth-child(4) {
-  width: 16%;
-  text-align: center;
+  width: 15%;
 }
 
 .rentals-clean-table th:nth-child(5),
 .rentals-clean-table td:nth-child(5) {
-  width: 15%;
+  width: 14%;
+  text-align: center;
 }
 
 .rentals-clean-table th:nth-child(6),
 .rentals-clean-table td:nth-child(6) {
-  width: 17%;
+  width: 14%;
+}
+
+.rentals-clean-table th:nth-child(7),
+.rentals-clean-table td:nth-child(7) {
+  width: 14%;
 }
 
 .rental-status-select {
@@ -1071,6 +1081,8 @@ td {
   display: grid;
   gap: 12px;
   margin-top: 16px;
+  padding-right: 6px;
+  overflow-y: auto;
 }
 
 .contact-rental-item {
@@ -1142,7 +1154,11 @@ td {
 .contact-detail-layout .contact-rentals-section {
   width: 100%;
   max-width: none;
+  height: 605px;
   margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .interactions-section {
@@ -1167,4 +1183,17 @@ td {
 
 .success-icon-btn:hover {
   background: #bbf7d0;
+}
+
+.contact-rentals-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.contact-rentals-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+.contact-rentals-list::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }

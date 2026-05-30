@@ -89,7 +89,7 @@ class MovimientoInventarioViewSet(viewsets.ModelViewSet):
             producto.cantidad_disponible += cantidad
 
         elif tipo == 'entrada':
-            raise ValidationError('Para agregar más inventario usa Nuevo producto')
+            producto.cantidad_disponible += cantidad
 
         producto.save()
         serializer.save()

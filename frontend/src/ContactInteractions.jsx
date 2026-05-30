@@ -54,6 +54,16 @@ function ContactInteractions({ contactoId }) {
     await cargarInteracciones()
   }
 
+  const formatearFecha = (fecha) => {
+    return new Date(fecha).toLocaleString('es-GT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   return (
     <section className="interactions-section">
       <div className="interactions-header">
@@ -114,7 +124,8 @@ function ContactInteractions({ contactoId }) {
               <strong>{item.motivo}</strong>
               <p>{item.descripcion}</p>
               <small>
-                {item.medio} · {item.responsable || 'Sin responsable'}
+                {item.medio} · {item.responsable || 'Sin responsable'} ·{' '}
+                {formatearFecha(item.fecha_interaccion)}
               </small>
             </div>
           </article>

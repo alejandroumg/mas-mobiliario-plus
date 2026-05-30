@@ -149,11 +149,13 @@ function RentalForm({ contactos, productos, volver, onGuardado }) {
         <div className="form-grid">
           <select name="cliente" value={form.cliente} onChange={cambiarForm}>
             <option value="">Selecciona un cliente *</option>
-            {contactos.map((contacto) => (
-              <option key={contacto.id} value={contacto.id}>
-                {contacto.nombre}
-              </option>
-            ))}
+            {contactos
+              .filter((contacto) => contacto.estado !== 'inactivo')
+              .map((contacto) => (
+                <option key={contacto.id} value={contacto.id}>
+                  {contacto.nombre}
+                </option>
+              ))}
           </select>
 
           <label className="form-field">

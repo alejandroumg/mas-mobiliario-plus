@@ -192,12 +192,70 @@ function RentalsList() {
     const confirmar = confirm('¿Deseas cancelar este alquiler?')
     if (!confirmar) return
 
-    await axios.patch(`${API}/alquileres/${alquiler.id}/`, {
-      estado: 'cancelado',
-    })
+    try {
+      const debeDevolverInventario =
+        alquiler.estado === 'confirmado' ||
+        alquiler.estado === 'en_curso'
 
-    await cargarDatos()
-    alert('Alquiler cancelado correctamente')
+      if (debeDevolverInventario) {
+        const claveAlquiler = `alquiler No. ${alquiler.id}`
+
+        const movimientosDelAlquiler = movimientos.filter((movimiento) =>
+          movimiento.observaciones?.includes(claveAlquiler)
+        )
+
+        const resumenPorProducto = {}
+
+        movimientosDelAlquiler.forEach((movimiento) => {
+          if (!resumenPorProducto[movimiento.producto]) {
+            resumenPorProducto[movimiento.producto] = {
+              producto: movimiento.producto,
+              salidas: 0,
+              devoluciones: 0,
+            }
+          }
+
+          if (movimiento.tipo === 'salida') {
+            resumenPorProducto[movimiento.producto].salidas += Number(movimiento.cantidad)
+          }
+
+          if (movimiento.tipo === 'devolucion') {
+            resumenPorProducto[movimiento.producto].devoluciones += Number(movimiento.cantidad)
+          }
+        })
+
+        const pendientesDevolver = Object.values(resumenPorProducto)
+          .map((item) => ({
+            producto: item.producto,
+            cantidad: item.salidas - item.devoluciones,
+          }))
+          .filter((item) => item.cantidad > 0)
+
+        for (const item of pendientesDevolver) {
+          await axios.post(`${API}/movimientos-inventario/`, {
+            producto: item.producto,
+            tipo: 'devolucion',
+            cantidad: item.cantidad,
+            observaciones: `Devolución por alquiler No. ${alquiler.id}`,
+          })
+        }
+      }
+
+      await axios.patch(`${API}/alquileres/${alquiler.id}/`, {
+        estado: 'cancelado',
+      })
+
+      await cargarDatos()
+      alert('Alquiler cancelado correctamente')
+    } catch (error) {
+      const data = error.response?.data
+
+      alert(
+        data?.[0] ||
+        data?.detail ||
+        'No se pudo cancelar el alquiler'
+      )
+    }
   }
 
   const cambiarEstado = async (alquiler, nuevoEstado) => {
@@ -369,7 +427,8 @@ function RentalsList() {
             <tr>
               <th>No. alquiler</th>
               <th>Cliente</th>
-              <th>Fecha evento</th>
+              <th>Fecha inicio</th>
+              <th>Fecha fin</th>
               <th>Producto</th>
               <th>Responsable</th>
               <th>Estado</th>
@@ -379,7 +438,7 @@ function RentalsList() {
           <tbody>
             {alquileresFiltrados.length === 0 ? (
               <tr>
-                <td colSpan="6" className="empty">
+                <td colSpan="7" className="empty">
                   Aún no hay alquileres registrados
                 </td>
               </tr>
@@ -390,7 +449,8 @@ function RentalsList() {
 
                   <td>{contactosMap[alquiler.cliente] || 'Cliente no encontrado'}</td>
 
-                  <td>{alquiler.fecha_evento}</td>
+                  <td>{alquiler.fecha_inicio || alquiler.fecha_evento}</td>
+                  <td>{alquiler.fecha_fin || alquiler.fecha_evento}</td>
 
                   <td>
                     <button
