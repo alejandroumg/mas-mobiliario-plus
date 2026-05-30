@@ -7,7 +7,8 @@ const API = 'http://127.0.0.1:8000/api'
 function RentalForm({ contactos, productos, volver, onGuardado }) {
   const [form, setForm] = useState({
     cliente: '',
-    fecha_evento: '',
+    fecha_inicio: '',
+    fecha_fin: '',
     direccion_evento: '',
     responsable: '',
     observaciones: '',
@@ -84,8 +85,13 @@ function RentalForm({ contactos, productos, volver, onGuardado }) {
   const guardar = async (e) => {
     e.preventDefault()
 
-    if (!form.cliente || !form.fecha_evento || !form.direccion_evento) {
-      alert('Completa los datos del alquiler')
+    if (!form.cliente || !form.fecha_inicio || !form.fecha_fin || !form.direccion_evento) {
+      alert('Completa los datos obligatorios del alquiler')
+      return
+    }
+
+    if (form.fecha_fin < form.fecha_inicio) {
+      alert('La fecha de finalización no puede ser anterior a la fecha de inicio')
       return
     }
 
@@ -96,7 +102,9 @@ function RentalForm({ contactos, productos, volver, onGuardado }) {
 
     const alquiler = await axios.post(`${API}/alquileres/`, {
       cliente: Number(form.cliente),
-      fecha_evento: form.fecha_evento,
+      fecha_evento: form.fecha_inicio,
+      fecha_inicio: form.fecha_inicio,
+      fecha_fin: form.fecha_fin,
       direccion_evento: form.direccion_evento,
       responsable: form.responsable,
       estado: form.estado,
@@ -110,7 +118,7 @@ function RentalForm({ contactos, productos, volver, onGuardado }) {
         cantidad: item.cantidad,
       })
 
-      if (form.estado === 'confirmado') {
+      if (form.estado === 'confirmado' || form.estado === 'en_curso') {
         await axios.post(`${API}/movimientos-inventario/`, {
           producto: item.producto,
           tipo: 'salida',
@@ -148,12 +156,25 @@ function RentalForm({ contactos, productos, volver, onGuardado }) {
             ))}
           </select>
 
-          <input
-            type="date"
-            name="fecha_evento"
-            value={form.fecha_evento}
-            onChange={cambiarForm}
-          />
+          <label className="form-field">
+            <span>Fecha de inicio *</span>
+            <input
+              type="date"
+              name="fecha_inicio"
+              value={form.fecha_inicio}
+              onChange={cambiarForm}
+            />
+          </label>
+
+          <label className="form-field">
+            <span>Fecha de finalización *</span>
+            <input
+              type="date"
+              name="fecha_fin"
+              value={form.fecha_fin}
+              onChange={cambiarForm}
+            />
+          </label>
 
           <input
             name="direccion_evento"
@@ -172,6 +193,7 @@ function RentalForm({ contactos, productos, volver, onGuardado }) {
           <select name="estado" value={form.estado} onChange={cambiarForm}>
             <option value="pendiente">Pendiente</option>
             <option value="confirmado">Confirmado</option>
+            <option value="en_curso">En curso</option>
           </select>
         </div>
 

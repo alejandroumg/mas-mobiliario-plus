@@ -30,12 +30,15 @@ class Alquiler(models.Model):
     ESTADOS = [
         ('pendiente', 'Pendiente'),
         ('confirmado', 'Confirmado'),
+        ('en_curso', 'En curso'),
         ('finalizado', 'Finalizado'),
         ('cancelado', 'Cancelado'),
     ]
 
     cliente = models.ForeignKey(Contacto, on_delete=models.CASCADE)
     fecha_evento = models.DateField()
+    fecha_inicio = models.DateField(null=True, blank=True)
+    fecha_fin = models.DateField(null=True, blank=True)
     direccion_evento = models.TextField()
     responsable = models.CharField(max_length=100, blank=True, null=True)
     estado = models.CharField(max_length=20, choices=ESTADOS, default='pendiente')

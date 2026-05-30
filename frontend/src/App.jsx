@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { User, Calendar, Plus } from 'lucide-react'
+import { User, Calendar, Plus, Eye, Pencil, Lock } from 'lucide-react'
 import logo from './assets/logo.png'
 import ContactForm from './ContactForm'
 import ContactDetail from './ContactDetail'
@@ -256,32 +256,35 @@ function App() {
                         <td>{contacto.direccion || 'Sin dirección'}</td>
                         <td>{categoriasMap[contacto.categoria] || 'Sin categoría'}</td>
                         <td>{contacto.estado}</td>
-                        <td>
+                        <td className="contact-actions">
                           <button
-                            className="action-btn"
+                            className="icon-action-btn"
+                            data-tooltip="Ver contacto"
                             onClick={() => {
                               setContactoSeleccionado(contacto)
                               setPantalla('detalle')
                             }}
                           >
-                            Ver
+                            <Eye size={18} />
                           </button>
 
                           <button
-                            className="action-btn"
+                            className="icon-action-btn"
+                            data-tooltip="Editar contacto"
                             onClick={() => {
                               setContactoEditando(contacto)
                               setPantalla('registro')
                             }}
                           >
-                            Editar
+                            <Pencil size={18} />
                           </button>
 
                           <button
-                            className="danger-btn"
+                            className="icon-action-btn danger-icon-btn"
+                            data-tooltip="Desactivar contacto"
                             onClick={() => desactivarContacto(contacto.id)}
                           >
-                            Desactivar
+                            <Lock size={18} />
                           </button>
                         </td>
                       </tr>

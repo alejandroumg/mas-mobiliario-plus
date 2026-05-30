@@ -63,7 +63,10 @@ function RentalsList() {
   })
 
   const confirmarAlquiler = async (alquiler) => {
-    const confirmar = confirm('¿Deseas confirmar este alquiler y descontar inventario?')
+    const confirmar = confirm(
+      '¿Deseas confirmar este alquiler y reservar los productos del inventario?'
+    )
+
     if (!confirmar) return
 
     try {
@@ -84,7 +87,35 @@ function RentalsList() {
       alert('Alquiler confirmado correctamente')
     } catch (error) {
       const data = error.response?.data
-      alert(data?.[0] || data?.detail || 'No se pudo confirmar el alquiler')
+
+      alert(
+        data?.[0] ||
+        data?.detail ||
+        'No se pudo confirmar el alquiler'
+      )
+    }
+  }
+
+  const iniciarAlquiler = async (alquiler) => {
+    const confirmar = confirm('¿Deseas marcar este alquiler como En curso?')
+
+    if (!confirmar) return
+
+    try {
+      await axios.patch(`${API}/alquileres/${alquiler.id}/`, {
+        estado: 'en_curso',
+      })
+
+      await cargarDatos()
+      alert('El alquiler ahora está En curso')
+    } catch (error) {
+      const data = error.response?.data
+
+      alert(
+        data?.[0] ||
+        data?.detail ||
+        'No se pudo iniciar el alquiler'
+      )
     }
   }
 
@@ -173,15 +204,29 @@ function RentalsList() {
     if (nuevoEstado === alquiler.estado) return
 
     if (nuevoEstado === 'confirmado') await confirmarAlquiler(alquiler)
+    if (nuevoEstado === 'en_curso') await iniciarAlquiler(alquiler)
     if (nuevoEstado === 'finalizado') await finalizarAlquiler(alquiler)
     if (nuevoEstado === 'cancelado') await cancelarAlquiler(alquiler)
   }
 
   const opcionesEstado = {
     pendiente: ['pendiente', 'confirmado', 'cancelado'],
-    confirmado: ['confirmado', 'finalizado'],
+    confirmado: ['confirmado', 'en_curso', 'cancelado'],
+    en_curso: ['en_curso', 'finalizado'],
     finalizado: ['finalizado'],
     cancelado: ['cancelado'],
+  }
+
+  const formatearEstado = (estado) => {
+    const nombres = {
+      pendiente: 'Pendiente',
+      confirmado: 'Confirmado',
+      en_curso: 'En curso',
+      finalizado: 'Finalizado',
+      cancelado: 'Cancelado',
+    }
+
+    return nombres[estado] || estado
   }
 
   if (pantalla === 'registro') {
@@ -282,6 +327,7 @@ function RentalsList() {
           <option value="">Todos los estados</option>
           <option value="pendiente">Pendiente</option>
           <option value="confirmado">Confirmado</option>
+          <option value="en_curso">En curso</option>
           <option value="finalizado">Finalizado</option>
           <option value="cancelado">Cancelado</option>
         </select>
@@ -369,7 +415,7 @@ function RentalsList() {
                     >
                       {opcionesEstado[alquiler.estado].map((estado) => (
                         <option key={estado} value={estado}>
-                          {estado}
+                          {formatearEstado(estado)}
                         </option>
                       ))}
                     </select>

@@ -892,3 +892,101 @@ td {
   margin: 0;
   color: #1f2937;
 }
+
+.contact-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-action-btn {
+  position: relative;
+  border: none;
+  background: #fff7ed;
+  color: #f59e0b;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.icon-action-btn:hover {
+  background: #ffedd5;
+  transform: translateY(-1px);
+}
+
+.danger-icon-btn {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.danger-icon-btn:hover {
+  background: #fecaca;
+}
+
+.icon-action-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  font-size: 12px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s ease;
+  z-index: 20;
+}
+
+.icon-action-btn:hover::after {
+  opacity: 1;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-field span {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rental-status-select.en_curso {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.inventory-status.reservado {
+  background: #fff7ed;
+  color: #f59e0b;
+}
+
+.toast-notification {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 9999;
+  max-width: 340px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.observations-field {
+  margin-top: 18px;
+}

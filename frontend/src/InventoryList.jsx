@@ -11,6 +11,7 @@ function InventoryList() {
   const [categorias, setCategorias] = useState([])
   const [movimientos, setMovimientos] = useState([])
   const [alquileres, setAlquileres] = useState([])
+  const [contactos, setContactos] = useState([])
   const [pantalla, setPantalla] = useState('listado')
 
   const [busqueda, setBusqueda] = useState('')
@@ -31,11 +32,13 @@ function InventoryList() {
     const resCategorias = await axios.get(`${API}/categorias-producto/`)
     const resMovimientos = await axios.get(`${API}/movimientos-inventario/`)
     const resAlquileres = await axios.get(`${API}/alquileres/`)
+    const resContactos = await axios.get(`${API}/contactos/`)
 
     setProductos(resProductos.data)
     setCategorias(resCategorias.data)
     setMovimientos(resMovimientos.data)
     setAlquileres(resAlquileres.data)
+    setContactos(resContactos.data)
   }
 
   const categoriasMap = Object.fromEntries(
@@ -46,6 +49,10 @@ function InventoryList() {
     productos.map((producto) => [producto.id, producto.nombre])
   )
 
+  const contactosMap = Object.fromEntries(
+    contactos.map((contacto) => [contacto.id, contacto.nombre])
+  )
+
   const formatearNoAlquiler = (id) => String(id).padStart(4, '0')
 
   const obtenerCantidadPorTipo = (productoId, tipo) => {
@@ -54,12 +61,20 @@ function InventoryList() {
       .reduce((total, m) => total + m.cantidad, 0)
   }
 
-  const obtenerEnUsoActual = (productoId) => {
+  const obtenerCantidadPorEstadoAlquiler = (productoId, estado) => {
     return alquileres
-      .filter((alquiler) => alquiler.estado === 'confirmado')
+      .filter((alquiler) => alquiler.estado === estado)
       .flatMap((alquiler) => alquiler.detalles || [])
       .filter((detalle) => detalle.producto === productoId)
       .reduce((total, detalle) => total + detalle.cantidad, 0)
+  }
+
+  const obtenerReservadoActual = (productoId) => {
+    return obtenerCantidadPorEstadoAlquiler(productoId, 'confirmado')
+  }
+
+  const obtenerEnUsoActual = (productoId) => {
+    return obtenerCantidadPorEstadoAlquiler(productoId, 'en_curso')
   }
 
   const construirFilasInventario = () => {
@@ -69,6 +84,7 @@ function InventoryList() {
       const categoria = categoriasMap[producto.categoria] || 'Sin categoría'
       const observaciones = producto.observaciones || 'Sin observaciones'
 
+      const reservado = obtenerReservadoActual(producto.id)
       const enUso = obtenerEnUsoActual(producto.id)
       const danados = obtenerCantidadPorTipo(producto.id, 'danado')
 
@@ -80,6 +96,18 @@ function InventoryList() {
           categoria,
           cantidad: producto.cantidad_disponible,
           estado: 'disponible',
+          observaciones,
+        })
+      }
+
+      if (reservado > 0) {
+        filas.push({
+          id: `${producto.id}-reservado`,
+          productoId: producto.id,
+          producto: producto.nombre,
+          categoria,
+          cantidad: reservado,
+          estado: 'reservado',
           observaciones,
         })
       }
@@ -141,8 +169,11 @@ function InventoryList() {
     return coincideProducto && coincideTipo
   })
 
-  const alquileresEnUsoFiltrados = alquileres
-    .filter((alquiler) => alquiler.estado === 'confirmado')
+  const estadoAlquilerDetalle =
+    historialFiltro.tipo === 'reservado' ? 'confirmado' : 'en_curso'
+
+  const alquileresRelacionadosFiltrados = alquileres
+    .filter((alquiler) => alquiler.estado === estadoAlquilerDetalle)
     .flatMap((alquiler) =>
       (alquiler.detalles || [])
         .filter((detalle) =>
@@ -152,12 +183,17 @@ function InventoryList() {
         .map((detalle) => ({
           id: `${alquiler.id}-${detalle.id}`,
           noAlquiler: formatearNoAlquiler(alquiler.id),
+          cliente: contactosMap[alquiler.cliente] || 'Cliente no encontrado',
           producto: productosMap[detalle.producto] || 'Producto no encontrado',
           cantidad: detalle.cantidad,
-          fecha: alquiler.fecha_evento,
+          fecha: alquiler.fecha_inicio || alquiler.fecha_evento,
           responsable: alquiler.responsable || 'Sin responsable',
         }))
     )
+
+  const mostrandoAsignaciones =
+    historialFiltro.tipo === 'en_uso' ||
+    historialFiltro.tipo === 'reservado'
 
   const abrirHistorialFiltrado = (productoId, tipo) => {
     setHistorialFiltro({
@@ -199,16 +235,20 @@ function InventoryList() {
 
         <div className="page-title">
           <h1>
-            {historialFiltro.tipo === 'en_uso'
-              ? 'Productos Actualmente en Uso'
-              : 'Historial de Movimientos de Inventario'}
+            {historialFiltro.tipo === 'reservado'
+              ? 'Productos Actualmente Reservados'
+              : historialFiltro.tipo === 'en_uso'
+                ? 'Productos Actualmente en Uso'
+                : 'Historial de Movimientos de Inventario'}
           </h1>
         </div>
 
-        {historialFiltro.tipo === 'en_uso' && (
+        {mostrandoAsignaciones && (
           <>
             <p className="history-filter-label">
-              Mostrando alquileres activos confirmados
+              {historialFiltro.tipo === 'reservado'
+                ? 'Mostrando reservas de alquileres confirmados'
+                : 'Mostrando productos de alquileres actualmente en curso'}
             </p>
 
             <section className="table-card">
@@ -216,24 +256,26 @@ function InventoryList() {
                 <thead>
                   <tr>
                     <th>No. alquiler</th>
+                    <th>Cliente</th>
                     <th>Producto</th>
                     <th>Cantidad</th>
-                    <th>Fecha evento</th>
+                    <th>Fecha inicio</th>
                     <th>Responsable</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {alquileresEnUsoFiltrados.length === 0 ? (
+                  {alquileresRelacionadosFiltrados.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="empty">
-                        No hay productos actualmente en uso
+                      <td colSpan="6" className="empty">
+                        No hay registros activos para este producto
                       </td>
                     </tr>
                   ) : (
-                    alquileresEnUsoFiltrados.map((item) => (
+                    alquileresRelacionadosFiltrados.map((item) => (
                       <tr key={item.id}>
                         <td>{item.noAlquiler}</td>
+                        <td>{item.cliente}</td>
                         <td>{item.producto}</td>
                         <td>{item.cantidad}</td>
                         <td>{item.fecha}</td>
@@ -247,7 +289,7 @@ function InventoryList() {
           </>
         )}
 
-        {historialFiltro.tipo !== 'en_uso' && (
+        {!mostrandoAsignaciones && (
           <section className="table-card">
             <table>
               <thead>
@@ -309,6 +351,7 @@ function InventoryList() {
         <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
           <option value="">Estado</option>
           <option value="disponible">Disponible</option>
+          <option value="reservado">Reservado</option>
           <option value="en_uso">En uso</option>
           <option value="danado">Dañado</option>
         </select>
@@ -383,12 +426,14 @@ function InventoryList() {
                   <td>{fila.categoria}</td>
                   <td>{fila.cantidad}</td>
                   <td>
-                    {fila.estado === 'en_uso' ? (
+                    {fila.estado === 'en_uso' || fila.estado === 'reservado' ? (
                       <button
-                        className="inventory-status en_uso status-click"
-                        onClick={() => abrirHistorialFiltrado(fila.productoId, 'en_uso')}
+                        className={`inventory-status ${fila.estado} status-click`}
+                        onClick={() =>
+                          abrirHistorialFiltrado(fila.productoId, fila.estado)
+                        }
                       >
-                        En uso +
+                        {fila.estado === 'en_uso' ? 'En uso +' : 'Reservado +'}
                       </button>
                     ) : (
                       <span className={`inventory-status ${fila.estado}`}>
