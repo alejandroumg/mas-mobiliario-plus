@@ -6,6 +6,7 @@ import ContactForm from './ContactForm'
 import ContactDetail from './ContactDetail'
 import InventoryList from './InventoryList'
 import RentalsList from './RentalsList'
+import ReportsPage from './ReportsPage'
 import './App.css'
 
 const API = 'http://127.0.0.1:8000/api'
@@ -159,9 +160,7 @@ function App() {
             <h1>Dashboard</h1>
           </div>
         ) : pantalla === 'reportes' ? (
-          <div className="page-title">
-            <h1>Reportes</h1>
-          </div>
+          <ReportsPage />
         ) : pantalla === 'configuracion' ? (
           <div className="page-title">
             <h1>Configuración</h1>
@@ -283,11 +282,10 @@ function App() {
                           </button>
 
                           <button
-                            className={`icon-action-btn ${
-                              contacto.estado === 'activo'
+                            className={`icon-action-btn ${contacto.estado === 'activo'
                                 ? 'danger-icon-btn'
                                 : 'success-icon-btn'
-                            }`}
+                              }`}
                             data-tooltip={
                               contacto.estado === 'activo'
                                 ? 'Desactivar contacto'
