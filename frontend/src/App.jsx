@@ -7,6 +7,7 @@ import ContactDetail from './ContactDetail'
 import InventoryList from './InventoryList'
 import RentalsList from './RentalsList'
 import ReportsPage from './ReportsPage'
+import UsersPage from './UsersPage'
 import './App.css'
 
 const API = 'http://127.0.0.1:8000/api'
@@ -112,6 +113,13 @@ function App() {
           </span>
 
           <span
+            className={pantalla === 'usuarios' ? 'active' : ''}
+            onClick={() => setPantalla('usuarios')}
+          >
+            Usuarios
+          </span>
+
+          <span
             className={pantalla === 'reportes' ? 'active' : ''}
             onClick={() => setPantalla('reportes')}
           >
@@ -159,6 +167,8 @@ function App() {
           <div className="page-title">
             <h1>Dashboard</h1>
           </div>
+        ) : pantalla === 'usuarios' ? (
+          <UsersPage />
         ) : pantalla === 'reportes' ? (
           <ReportsPage />
         ) : pantalla === 'configuracion' ? (
@@ -283,8 +293,8 @@ function App() {
 
                           <button
                             className={`icon-action-btn ${contacto.estado === 'activo'
-                                ? 'danger-icon-btn'
-                                : 'success-icon-btn'
+                              ? 'danger-icon-btn'
+                              : 'success-icon-btn'
                               }`}
                             data-tooltip={
                               contacto.estado === 'activo'
