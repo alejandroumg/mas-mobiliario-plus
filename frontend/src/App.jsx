@@ -8,6 +8,7 @@ import InventoryList from './InventoryList'
 import RentalsList from './RentalsList'
 import ReportsPage from './ReportsPage'
 import UsersPage from './UsersPage'
+import DashboardPage from './DashboardPage'
 import './App.css'
 
 const API = 'http://127.0.0.1:8000/api'
@@ -126,12 +127,7 @@ function App() {
             Reportes
           </span>
 
-          <span
-            className={pantalla === 'configuracion' ? 'active' : ''}
-            onClick={() => setPantalla('configuracion')}
-          >
-            Configuración
-          </span>
+
         </nav>
       </aside>
 
@@ -164,9 +160,7 @@ function App() {
         ) : pantalla === 'alquileres' ? (
           <RentalsList />
         ) : pantalla === 'dashboard' ? (
-          <div className="page-title">
-            <h1>Dashboard</h1>
-          </div>
+          <DashboardPage irA={setPantalla} />
         ) : pantalla === 'usuarios' ? (
           <UsersPage />
         ) : pantalla === 'reportes' ? (
