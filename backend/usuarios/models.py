@@ -14,6 +14,7 @@ class UsuarioSistema(models.Model):
 
     nombre = models.CharField(max_length=100)
     correo = models.EmailField(unique=True)
+    password = models.CharField(max_length=128, blank=True)
     rol = models.CharField(max_length=20, choices=ROLES, default='usuario')
     estado = models.CharField(max_length=20, choices=ESTADOS, default='activo')
     fecha_registro = models.DateTimeField(auto_now_add=True)

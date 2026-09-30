@@ -12,6 +12,7 @@ function UsersPage() {
   const [form, setForm] = useState({
     nombre: '',
     correo: '',
+    password: '',
     rol: 'usuario',
     estado: 'activo',
   })
@@ -47,6 +48,7 @@ function UsersPage() {
     setForm({
       nombre: '',
       correo: '',
+      password: '',
       rol: 'usuario',
       estado: 'activo',
     })
@@ -58,6 +60,11 @@ function UsersPage() {
 
     if (!form.nombre || !form.correo) {
       alert('Completa el nombre y correo del usuario')
+      return
+    }
+
+    if (!editando && !form.password) {
+      alert('Ingresa una contraseña para el usuario')
       return
     }
 
@@ -91,6 +98,7 @@ function UsersPage() {
     setForm({
       nombre: usuario.nombre,
       correo: usuario.correo,
+      password: '',
       rol: usuario.rol,
       estado: usuario.estado,
     })
@@ -168,6 +176,16 @@ function UsersPage() {
           </label>
 
           <label>
+            Contraseña
+            <input
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              placeholder={editando ? 'Dejar vacío para no cambiar' : 'Contraseña del usuario'}
+            />
+          </label>
+
+          <label>
             Rol
             <select
               value={form.rol}
@@ -236,11 +254,10 @@ function UsersPage() {
                       </button>
 
                       <button
-                        className={`icon-action-btn ${
-                          usuario.estado === 'activo'
-                            ? 'danger-icon-btn'
-                            : 'success-icon-btn'
-                        }`}
+                        className={`icon-action-btn ${usuario.estado === 'activo'
+                          ? 'danger-icon-btn'
+                          : 'success-icon-btn'
+                          }`}
                         data-tooltip={
                           usuario.estado === 'activo'
                             ? 'Desactivar usuario'

@@ -9,12 +9,33 @@ import RentalsList from './RentalsList'
 import ReportsPage from './ReportsPage'
 import UsersPage from './UsersPage'
 import DashboardPage from './DashboardPage'
+import LoginPage from './LoginPage'
 import './App.css'
 
 const API = 'http://127.0.0.1:8000/api'
 
 function App() {
-  const [pantalla, setPantalla] = useState('listado')
+  const [pantalla, setPantalla] = useState('dashboard')
+  const [usuarioActual, setUsuarioActual] = useState(() => {
+    const usuarioGuardado = localStorage.getItem('usuarioActual')
+    return usuarioGuardado ? JSON.parse(usuarioGuardado) : null
+  })
+
+  const [menuPerfilAbierto, setMenuPerfilAbierto] = useState(false)
+
+  const iniciarSesion = (usuario) => {
+    setUsuarioActual(usuario)
+    localStorage.setItem('usuarioActual', JSON.stringify(usuario))
+    setPantalla('dashboard')
+    setMenuPerfilAbierto(false)
+  }
+
+  const cerrarSesion = () => {
+    localStorage.removeItem('usuarioActual')
+    setUsuarioActual(null)
+    setPantalla('dashboard')
+    setMenuPerfilAbierto(false)
+  }
   const [contactos, setContactos] = useState([])
   const [categorias, setCategorias] = useState([])
   const [contactoEditando, setContactoEditando] = useState(null)
@@ -25,8 +46,15 @@ function App() {
   const [filtroCategoria, setFiltroCategoria] = useState('')
 
   useEffect(() => {
+    if (usuarioActual?.rol !== 'administrador' && pantalla === 'usuarios') {
+      setPantalla('dashboard')
+    }
+  }, [usuarioActual, pantalla])
+  useEffect(() => {
+  if (usuarioActual) {
     cargarDatos()
-  }, [])
+  }
+}, [usuarioActual])
 
   const cargarDatos = async () => {
     const resContactos = await axios.get(`${API}/contactos/`)
@@ -74,6 +102,10 @@ function App() {
     }
   }
 
+  if (!usuarioActual) {
+    return <LoginPage onLogin={iniciarSesion} />
+  }
+
   return (
     <div className="app">
       <aside className="sidebar">
@@ -113,12 +145,14 @@ function App() {
             Inventario
           </span>
 
-          <span
-            className={pantalla === 'usuarios' ? 'active' : ''}
-            onClick={() => setPantalla('usuarios')}
-          >
-            Usuarios
-          </span>
+          {usuarioActual.rol === 'administrador' && (
+            <span
+              className={pantalla === 'usuarios' ? 'active' : ''}
+              onClick={() => setPantalla('usuarios')}
+            >
+              Usuarios
+            </span>
+          )}
 
           <span
             className={pantalla === 'reportes' ? 'active' : ''}
@@ -129,11 +163,36 @@ function App() {
 
 
         </nav>
+
       </aside>
 
       <main className="content">
         <header className="topbar">
-          <div className="user">AR</div>
+          <div className="profile-menu-wrapper">
+            <button
+              className={`user ${menuPerfilAbierto ? 'user-active' : ''}`}
+              onClick={() => setMenuPerfilAbierto(!menuPerfilAbierto)}
+            >
+              AR
+            </button>
+
+            {menuPerfilAbierto && (
+              <div className="profile-dropdown">
+                <div className="profile-info">
+                  <strong>{usuarioActual.nombre}</strong>
+                  <span>{usuarioActual.rol}</span>
+                </div>
+
+                <button type="button">
+                  Mi perfil
+                </button>
+
+                <button type="button" onClick={cerrarSesion}>
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
         </header>
 
         {pantalla === 'registro' ? (
