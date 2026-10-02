@@ -2,8 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react'
 
-const API = 'http://127.0.0.1:8000/api'
-
+const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api' 
 function RentalForm({ contactos, productos, volver, onGuardado }) {
   const [form, setForm] = useState({
     cliente: '',

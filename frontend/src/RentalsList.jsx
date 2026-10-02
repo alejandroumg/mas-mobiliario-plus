@@ -3,8 +3,7 @@ import axios from 'axios'
 import { Calendar, Plus, ArrowLeft } from 'lucide-react'
 import RentalForm from './RentalForm'
 
-const API = 'http://127.0.0.1:8000/api'
-
+const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api' 
 function RentalsList() {
   const [alquileres, setAlquileres] = useState([])
   const [contactos, setContactos] = useState([])

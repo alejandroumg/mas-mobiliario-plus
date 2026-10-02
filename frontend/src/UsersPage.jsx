@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Pencil, Plus, Trash2, UserCheck, UserX } from 'lucide-react'
 
-const API = 'http://127.0.0.1:8000/api'
-
+const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api' 
 function UsersPage() {
   const [usuarios, setUsuarios] = useState([])
   const [logs, setLogs] = useState([])

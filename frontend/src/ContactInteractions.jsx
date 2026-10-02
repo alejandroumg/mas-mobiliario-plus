@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Plus, MessageCircle } from 'lucide-react'
 
-const API = 'http://127.0.0.1:8000/api'
-
+const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api' 
 function ContactInteractions({ contactoId }) {
   const [interacciones, setInteracciones] = useState([])
   const [mostrarFormulario, setMostrarFormulario] = useState(false)

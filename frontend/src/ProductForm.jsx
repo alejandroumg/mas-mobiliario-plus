@@ -2,8 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { ArrowLeft, Save } from 'lucide-react'
 
-const API = 'http://127.0.0.1:8000/api'
-
+const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api' 
 function ProductForm({ categorias, volver, onGuardado }) {
   const [form, setForm] = useState({
     nombre: '',

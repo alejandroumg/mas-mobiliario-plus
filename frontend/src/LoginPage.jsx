@@ -3,8 +3,7 @@ import { Eye, EyeOff, Lock, LogIn, Mail, UserPlus } from 'lucide-react'
 import axios from 'axios'
 import logo from './assets/logo.png'
 
-const API = 'http://127.0.0.1:8000/api'
-
+const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api' 
 function LoginPage({ onLogin }) {
     const [correo, setCorreo] = useState('')
     const [password, setPassword] = useState('')
