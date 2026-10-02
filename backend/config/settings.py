@@ -140,6 +140,7 @@ STATIC_URL = 'static/'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://athletic-unity-production-77fb.up.railway.app",
 ]
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
