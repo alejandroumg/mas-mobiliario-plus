@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Eye, EyeOff, Lock, LogIn, Mail, UserPlus } from 'lucide-react'
+import { Eye, EyeOff, Lock, LogIn, Mail } from 'lucide-react'
 import axios from 'axios'
 import logo from './assets/logo.png'
 
@@ -28,7 +28,7 @@ function LoginPage({ onLogin }) {
             onLogin(res.data)
         } catch (error) {
             console.error(error)
-            setError('No se pudo iniciar sesión. Revisa el backend.')
+            setError('No se pudo iniciar sesión. Verifica tu correo y contraseña.')
         }
     }
 
@@ -96,17 +96,6 @@ function LoginPage({ onLogin }) {
                     <button type="submit" className="login-submit">
                         <LogIn size={19} />
                         Iniciar sesión
-                    </button>
-
-                    <div className="login-divider">
-                        <span />
-                        o bien
-                        <span />
-                    </div>
-
-                    <button type="button" className="request-access-btn">
-                        <UserPlus size={19} />
-                        Solicitar acceso
                     </button>
                 </form>
 

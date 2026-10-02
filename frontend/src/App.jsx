@@ -11,6 +11,8 @@ import UsersPage from './UsersPage'
 import DashboardPage from './DashboardPage'
 import LoginPage from './LoginPage'
 import './App.css'
+import ToastHost from './ToastHost'
+import ConfirmHost from './ConfirmHost'
 
 const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api' 
 function App() {
@@ -106,6 +108,9 @@ function App() {
   }
 
   return (
+    <>
+      <ToastHost />
+      <ConfirmHost />
     <div className="app">
       <aside className="sidebar">
         <img src={logo} alt="Mobiliario Plus" className="logo" />
@@ -372,6 +377,7 @@ function App() {
         )}
       </main>
     </div>
+    </>
   )
 }
 

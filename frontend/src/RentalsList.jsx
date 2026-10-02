@@ -62,9 +62,13 @@ function RentalsList() {
   })
 
   const confirmarAlquiler = async (alquiler) => {
-    const confirmar = confirm(
-      '¿Deseas confirmar este alquiler y reservar los productos del inventario?'
-    )
+    const confirmar = await window.appConfirm({
+      title: 'Confirmar alquiler',
+      message: '¿Deseas confirmar este alquiler y reservar los productos del inventario?',
+      confirmText: 'Sí, confirmar',
+      cancelText: 'Cancelar',
+      type: 'success',
+    })
 
     if (!confirmar) return
 
@@ -96,7 +100,13 @@ function RentalsList() {
   }
 
   const iniciarAlquiler = async (alquiler) => {
-    const confirmar = confirm('¿Deseas marcar este alquiler como En curso?')
+    const confirmar = await window.appConfirm({
+      title: 'Marcar en curso',
+      message: '¿Deseas marcar este alquiler como En curso?',
+      confirmText: 'Sí, continuar',
+      cancelText: 'Cancelar',
+      type: 'warning',
+    })
 
     if (!confirmar) return
 
@@ -119,7 +129,13 @@ function RentalsList() {
   }
 
   const finalizarAlquiler = async (alquiler) => {
-    const confirmar = confirm('¿Deseas finalizar este alquiler y devolver los productos al inventario?')
+    const confirmar = await window.appConfirm({
+      title: 'Finalizar alquiler',
+      message: '¿Deseas finalizar este alquiler y devolver los productos al inventario?',
+      confirmText: 'Sí, finalizar',
+      cancelText: 'Cancelar',
+      type: 'warning',
+    })
     if (!confirmar) return
 
     try {
@@ -188,7 +204,13 @@ function RentalsList() {
   }
 
   const cancelarAlquiler = async (alquiler) => {
-    const confirmar = confirm('¿Deseas cancelar este alquiler?')
+    const confirmar = await window.appConfirm({
+      title: 'Cancelar alquiler',
+      message: '¿Deseas cancelar este alquiler?',
+      confirmText: 'Sí, cancelar',
+      cancelText: 'Volver',
+      type: 'warning',
+    })
     if (!confirmar) return
 
     try {

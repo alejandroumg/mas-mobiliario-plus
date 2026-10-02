@@ -125,7 +125,13 @@ function UsersPage() {
   }
 
   const eliminarUsuario = async (usuario) => {
-    const confirmar = confirm(`¿Deseas eliminar al usuario ${usuario.nombre}?`)
+    const confirmar = await window.appConfirm({
+      title: 'Eliminar usuario',
+      message: `¿Deseas eliminar al usuario ${usuario.nombre}?`,
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      type: 'warning',
+    })
 
     if (!confirmar) return
 
