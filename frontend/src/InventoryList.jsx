@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { Package, Plus, ArrowLeftRight, History, ArrowLeft } from 'lucide-react'
+import { Package, Plus, ArrowLeftRight, History, ArrowLeft, Eye, Pencil, MoreVertical } from 'lucide-react'
 import ProductForm from './ProductForm'
 import InventoryMovementForm from './InventoryMovementForm'
 
@@ -12,6 +12,8 @@ function InventoryList() {
   const [alquileres, setAlquileres] = useState([])
   const [contactos, setContactos] = useState([])
   const [pantalla, setPantalla] = useState('listado')
+  const [productoSeleccionado, setProductoSeleccionado] = useState(null)
+  const [menuEstadoAbierto, setMenuEstadoAbierto] = useState(null)
 
   const [busqueda, setBusqueda] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('')
@@ -82,6 +84,11 @@ function InventoryList() {
     productos.forEach((producto) => {
       const categoria = categoriasMap[producto.categoria] || 'Sin categoría'
       const observaciones = producto.observaciones || 'Sin observaciones'
+      const estadoBase = producto.estado || 'disponible'
+      const estadoVisual =
+        estadoBase === 'danado' || estadoBase === 'fuera_uso'
+          ? estadoBase
+          : 'disponible'
 
       const reservado = obtenerReservadoActual(producto.id)
       const enUso = obtenerEnUsoActual(producto.id)
@@ -94,7 +101,7 @@ function InventoryList() {
           producto: producto.nombre,
           categoria,
           cantidad: producto.cantidad_disponible,
-          estado: 'disponible',
+          estado: estadoVisual,
           observaciones,
         })
       }
@@ -203,13 +210,49 @@ function InventoryList() {
     setPantalla('historial')
   }
 
+  const textoEstadoProducto = (estado) => {
+    if (estado === 'disponible') return 'Disponible'
+    if (estado === 'reservado') return 'Reservado'
+    if (estado === 'en_uso') return 'En uso'
+    if (estado === 'danado') return 'Dañado'
+    if (estado === 'fuera_uso') return 'Fuera de uso'
+    return 'Sin estado'
+  }
+
+  const verDetalleProducto = (productoId) => {
+    const producto = productos.find((item) => item.id === productoId)
+
+    if (!producto) return
+
+    setProductoSeleccionado(producto)
+    setPantalla('detalle')
+  }
+
+  const cambiarEstadoProducto = async (productoId, nuevoEstado) => {
+    try {
+      await axios.patch(`${API}/productos/${productoId}/`, {
+        estado: nuevoEstado,
+      })
+
+      setMenuEstadoAbierto(null)
+      await cargarInventario()
+      alert('Estado del producto actualizado correctamente')
+    } catch (error) {
+      alert('No se pudo actualizar el estado del producto')
+    }
+  }
+
   const disponibles = productos.filter((p) => p.cantidad_disponible > 0).length
 
   if (pantalla === 'registro') {
     return (
       <ProductForm
         categorias={categorias}
-        volver={() => setPantalla('listado')}
+        productoEditando={productoSeleccionado}
+        volver={() => {
+          setProductoSeleccionado(null)
+          setPantalla('listado')
+        }}
         onGuardado={cargarInventario}
       />
     )
@@ -325,6 +368,79 @@ function InventoryList() {
     )
   }
 
+  if (pantalla === 'detalle') {
+    const categoriaProducto =
+      categoriasMap[productoSeleccionado?.categoria] || 'Sin categoría'
+
+    return (
+      <>
+        <button
+          className="back-btn"
+          onClick={() => {
+            setProductoSeleccionado(null)
+            setPantalla('listado')
+          }}
+        >
+          <ArrowLeft size={18} /> Volver al inventario
+        </button>
+
+        <section className="inventory-detail-layout">
+          <article className="inventory-detail-card">
+            <div className="inventory-detail-icon">
+              <Package size={42} />
+            </div>
+
+            <h1>{productoSeleccionado?.nombre}</h1>
+
+            <span className={`inventory-status ${productoSeleccionado?.estado || 'disponible'}`}>
+              {textoEstadoProducto(productoSeleccionado?.estado || 'disponible')}
+            </span>
+
+            <div className="inventory-detail-grid">
+              <div>
+                <strong>Categoría</strong>
+                <p>{categoriaProducto}</p>
+              </div>
+
+              <div>
+                <strong>Cantidad disponible</strong>
+                <p>{productoSeleccionado?.cantidad_disponible ?? 0}</p>
+              </div>
+
+              <div>
+                <strong>Estado</strong>
+                <p>{textoEstadoProducto(productoSeleccionado?.estado || 'disponible')}</p>
+              </div>
+            </div>
+
+            <hr />
+
+            <div className="inventory-detail-observations">
+              <strong>Observaciones</strong>
+              <p>{productoSeleccionado?.observaciones || 'Sin observaciones'}</p>
+            </div>
+          </article>
+
+          <aside className="inventory-detail-side">
+            <h2>Resumen del producto</h2>
+
+            <div className="inventory-detail-summary">
+              <p>
+                <span>Cantidad disponible</span>
+                <strong>{productoSeleccionado?.cantidad_disponible ?? 0}</strong>
+              </p>
+
+              <p>
+                <span>Categoría</span>
+                <strong>{categoriaProducto}</strong>
+              </p>
+            </div>
+          </aside>
+        </section>
+      </>
+    )
+  }
+
   return (
     <>
       <div className="page-title">
@@ -353,6 +469,7 @@ function InventoryList() {
           <option value="reservado">Reservado</option>
           <option value="en_uso">En uso</option>
           <option value="danado">Dañado</option>
+          <option value="fuera_uso">Fuera de uso</option>
         </select>
 
         <button className="movement-btn" onClick={() => setPantalla('movimiento')}>
@@ -360,7 +477,13 @@ function InventoryList() {
           Registrar movimiento
         </button>
 
-        <button className="inventory-primary-btn" onClick={() => setPantalla('registro')}>
+        <button
+          className="inventory-primary-btn"
+          onClick={() => {
+            setProductoSeleccionado(null)
+            setPantalla('registro')
+          }}
+        >
           <Plus size={18} />
           Nuevo producto
         </button>
@@ -407,7 +530,7 @@ function InventoryList() {
               <th>Categoría</th>
               <th>Cantidad</th>
               <th>Estado</th>
-              <th>Observaciones</th>
+              <th>Acciones</th>
             </tr>
           </thead>
 
@@ -436,12 +559,83 @@ function InventoryList() {
                       </button>
                     ) : (
                       <span className={`inventory-status ${fila.estado}`}>
-                        {fila.estado === 'disponible' && 'Disponible'}
-                        {fila.estado === 'danado' && 'Dañado'}
+                        {textoEstadoProducto(fila.estado)}
                       </span>
                     )}
                   </td>
-                  <td>{fila.observaciones}</td>
+                  <td className="inventory-actions">
+                    <button
+                      className="icon-action-btn inventory-action-view"
+                      data-tooltip="Ver producto"
+                      onClick={() => {
+                        setMenuEstadoAbierto(null)
+                        verDetalleProducto(fila.productoId)
+                      }}
+                    >
+                      <Eye size={18} />
+                    </button>
+
+                    <button
+                      className="icon-action-btn inventory-action-edit"
+                      data-tooltip="Editar producto"
+                      onClick={() => {
+                        const productoBase = productos.find(
+                          (producto) => producto.id === fila.productoId
+                        )
+
+                        setMenuEstadoAbierto(null)
+                        setProductoSeleccionado(productoBase)
+                        setPantalla('registro')
+                      }}
+                    >
+                      <Pencil size={18} />
+                    </button>
+
+                    <div className="inventory-more-wrapper">
+                      <button
+                        className="icon-action-btn inventory-action-more"
+                        data-tooltip="Cambiar estado"
+                        onClick={() =>
+                          setMenuEstadoAbierto(
+                            menuEstadoAbierto === fila.id ? null : fila.id
+                          )
+                        }
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+
+                      {menuEstadoAbierto === fila.id && (
+                        <div className="inventory-more-menu">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              cambiarEstadoProducto(fila.productoId, 'disponible')
+                            }
+                          >
+                            Disponible
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              cambiarEstadoProducto(fila.productoId, 'danado')
+                            }
+                          >
+                            Dañado
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              cambiarEstadoProducto(fila.productoId, 'fuera_uso')
+                            }
+                          >
+                            Fuera de uso
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))
             )}

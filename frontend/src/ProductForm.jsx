@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { ArrowLeft, Save } from 'lucide-react'
 
-const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api' 
-function ProductForm({ categorias, volver, onGuardado }) {
+const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'
+
+function ProductForm({ categorias, volver, onGuardado, productoEditando }) {
   const [form, setForm] = useState({
     nombre: '',
     cantidad_disponible: '',
@@ -11,6 +12,18 @@ function ProductForm({ categorias, volver, onGuardado }) {
     categoria: '',
     observaciones: '',
   })
+
+  useEffect(() => {
+    if (productoEditando) {
+      setForm({
+        nombre: productoEditando.nombre || '',
+        cantidad_disponible: productoEditando.cantidad_disponible ?? '',
+        estado: productoEditando.estado || 'disponible',
+        categoria: productoEditando.categoria || '',
+        observaciones: productoEditando.observaciones || '',
+      })
+    }
+  }, [productoEditando])
 
   const cambiar = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -24,14 +37,21 @@ function ProductForm({ categorias, volver, onGuardado }) {
       return
     }
 
-    await axios.post(`${API}/productos/`, {
+    const payload = {
       ...form,
       cantidad_disponible: Number(form.cantidad_disponible),
       categoria: form.categoria || null,
-    })
+    }
+
+    if (productoEditando) {
+      await axios.put(`${API}/productos/${productoEditando.id}/`, payload)
+      alert('Producto actualizado correctamente')
+    } else {
+      await axios.post(`${API}/productos/`, payload)
+      alert('Producto guardado correctamente')
+    }
 
     await onGuardado()
-    alert('Producto guardado correctamente')
     volver()
   }
 
@@ -42,7 +62,11 @@ function ProductForm({ categorias, volver, onGuardado }) {
       </button>
 
       <div className="page-title">
-        <h1>Pantalla de Registro de Producto</h1>
+        <h1>
+          {productoEditando
+            ? 'Pantalla de Edición de Producto'
+            : 'Pantalla de Registro de Producto'}
+        </h1>
       </div>
 
       <form className="form-card" onSubmit={guardar}>
@@ -93,7 +117,8 @@ function ProductForm({ categorias, volver, onGuardado }) {
           </button>
 
           <button type="submit" className="primary-btn">
-            <Save size={18} /> Guardar producto
+            <Save size={18} />
+            {productoEditando ? 'Actualizar producto' : 'Guardar producto'}
           </button>
         </div>
       </form>
