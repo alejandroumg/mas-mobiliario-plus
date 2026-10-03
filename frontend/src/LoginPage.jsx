@@ -43,7 +43,7 @@ function LoginPage({ onLogin }) {
 
             <section className="login-panel">
                 <form className="login-card" onSubmit={iniciarSesion}>
-                    <h1>Pantalla de Inicio de Sesión</h1>
+                    <h1>Inicio de Sesión</h1>
                     <span>Accede a tu cuenta para continuar</span>
 
                     {error && <div className="login-error">{error}</div>}

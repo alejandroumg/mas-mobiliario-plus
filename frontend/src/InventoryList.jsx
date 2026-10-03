@@ -444,7 +444,7 @@ function InventoryList() {
   return (
     <>
       <div className="page-title">
-        <h1>Pantalla de Listado de Inventario</h1>
+        <h1>Listado de Inventario</h1>
       </div>
 
       <section className="inventory-filters">

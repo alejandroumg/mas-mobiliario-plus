@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
-import { BarChart3, FileSpreadsheet, Users, Package, CalendarDays } from 'lucide-react'
+import { BarChart3, FileSpreadsheet, Users, Package, CalendarDays, ChevronsUpDown } from 'lucide-react'
 import {
-    LineChart,
-    Line,
+    BarChart,
+    Bar,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -24,6 +24,12 @@ function ReportsPage() {
     const [tipoReporte, setTipoReporte] = useState('general')
     const [fechaInicio, setFechaInicio] = useState('')
     const [fechaFin, setFechaFin] = useState('')
+
+    const [filtroMovAbierto, setFiltroMovAbierto] = useState(null)
+    const [filtroMovProducto, setFiltroMovProducto] = useState('')
+    const [filtroMovTipo, setFiltroMovTipo] = useState('')
+    const [filtroMovCantidad, setFiltroMovCantidad] = useState('')
+    const [filtroMovObservacion, setFiltroMovObservacion] = useState('')
 
     useEffect(() => {
         cargarDatos()
@@ -114,6 +120,51 @@ function ReportsPage() {
         return producto ? producto.nombre : 'Producto no encontrado'
     }
 
+    const toggleFiltroMovimiento = (filtro) => {
+        setFiltroMovAbierto(filtroMovAbierto === filtro ? null : filtro)
+    }
+
+    const opcionesProductosMovimientos = [
+        ...new Set(movimientosFiltrados.map((movimiento) =>
+            obtenerNombreProducto(movimiento.producto)
+        )),
+    ]
+
+    const opcionesTiposMovimientos = [
+        ...new Set(movimientosFiltrados.map((movimiento) => movimiento.tipo).filter(Boolean)),
+    ]
+
+    const opcionesCantidadesMovimientos = [
+        ...new Set(movimientosFiltrados.map((movimiento) => String(movimiento.cantidad))),
+    ]
+
+    const movimientosReporteFiltrados = movimientosFiltrados.filter((movimiento) => {
+        const producto = obtenerNombreProducto(movimiento.producto)
+        const tipo = movimiento.tipo || ''
+        const cantidad = String(movimiento.cantidad)
+        const observacion = movimiento.observaciones || 'Sin observaciones'
+
+        const coincideProducto =
+            filtroMovProducto === '' || producto === filtroMovProducto
+
+        const coincideTipo =
+            filtroMovTipo === '' || tipo === filtroMovTipo
+
+        const coincideCantidad =
+            filtroMovCantidad === '' || cantidad === filtroMovCantidad
+
+        const coincideObservacion =
+            filtroMovObservacion === '' ||
+            observacion.toLowerCase().includes(filtroMovObservacion.toLowerCase())
+
+        return (
+            coincideProducto &&
+            coincideTipo &&
+            coincideCantidad &&
+            coincideObservacion
+        )
+    })
+
     const exportarExcel = () => {
         let filas = []
 
@@ -183,7 +234,7 @@ function ReportsPage() {
     return (
         <main className="main-content">
             <div className="page-title">
-                <h1>Pantalla de Reportes</h1>
+                <h1>Reportes</h1>
             </div>
 
             <section className="filters-row">
@@ -244,21 +295,19 @@ function ReportsPage() {
 
                     <div className="chart-container">
                         <ResponsiveContainer width="100%" height={250}>
-                            <LineChart data={datosGraficaMensual}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="mes" />
-                                <YAxis allowDecimals={false} />
-                                <Tooltip />
-                                <Line
-                                    type="monotone"
-                                    dataKey="alquileres"
-                                    stroke="#f59e0b"
-                                    strokeWidth={3}
-                                    dot={{ r: 5 }}
-                                    activeDot={{ r: 7 }}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
+                                <BarChart data={datosGraficaMensual}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="mes" />
+                                    <YAxis allowDecimals={false} />
+                                    <Tooltip />
+                                    <Bar
+                                        dataKey="alquileres"
+                                        fill="#f59e0b"
+                                        radius={[10, 10, 0, 0]}
+                                        barSize={42}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
                     </div>
                 </article>
 
@@ -310,21 +359,147 @@ function ReportsPage() {
                 </article>
             </section>
 
-            <section className="table-card">
+            <section className="table-card reports-movements-card">
                 <h2>Movimientos recientes de inventario</h2>
 
                 <table>
                     <thead>
                         <tr>
-                            <th>Producto</th>
-                            <th>Tipo</th>
-                            <th>Cantidad</th>
-                            <th>Observaciones</th>
+                            <th>
+                                <button
+                                    type="button"
+                                    className="users-th-filter"
+                                    onClick={() => toggleFiltroMovimiento('producto')}
+                                >
+                                    Producto <ChevronsUpDown size={14} />
+                                </button>
+
+                                {filtroMovAbierto === 'producto' && (
+                                    <div className="users-filter-popover">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setFiltroMovProducto('')
+                                                setFiltroMovAbierto(null)
+                                            }}
+                                        >
+                                            Todos
+                                        </button>
+
+                                        {opcionesProductosMovimientos.map((producto) => (
+                                            <button
+                                                key={producto}
+                                                type="button"
+                                                onClick={() => {
+                                                    setFiltroMovProducto(producto)
+                                                    setFiltroMovAbierto(null)
+                                                }}
+                                            >
+                                                {producto}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </th>
+
+                            <th>
+                                <button
+                                    type="button"
+                                    className="users-th-filter"
+                                    onClick={() => toggleFiltroMovimiento('tipo')}
+                                >
+                                    Tipo <ChevronsUpDown size={14} />
+                                </button>
+
+                                {filtroMovAbierto === 'tipo' && (
+                                    <div className="users-filter-popover">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setFiltroMovTipo('')
+                                                setFiltroMovAbierto(null)
+                                            }}
+                                        >
+                                            Todos
+                                        </button>
+
+                                        {opcionesTiposMovimientos.map((tipo) => (
+                                            <button
+                                                key={tipo}
+                                                type="button"
+                                                onClick={() => {
+                                                    setFiltroMovTipo(tipo)
+                                                    setFiltroMovAbierto(null)
+                                                }}
+                                            >
+                                                {tipo}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </th>
+
+                            <th>
+                                <button
+                                    type="button"
+                                    className="users-th-filter"
+                                    onClick={() => toggleFiltroMovimiento('cantidad')}
+                                >
+                                    Cantidad <ChevronsUpDown size={14} />
+                                </button>
+
+                                {filtroMovAbierto === 'cantidad' && (
+                                    <div className="users-filter-popover">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setFiltroMovCantidad('')
+                                                setFiltroMovAbierto(null)
+                                            }}
+                                        >
+                                            Todas
+                                        </button>
+
+                                        {opcionesCantidadesMovimientos.map((cantidad) => (
+                                            <button
+                                                key={cantidad}
+                                                type="button"
+                                                onClick={() => {
+                                                    setFiltroMovCantidad(cantidad)
+                                                    setFiltroMovAbierto(null)
+                                                }}
+                                            >
+                                                {cantidad}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </th>
+
+                            <th>
+                                <button
+                                    type="button"
+                                    className="users-th-filter"
+                                    onClick={() => toggleFiltroMovimiento('observaciones')}
+                                >
+                                    Observaciones <ChevronsUpDown size={14} />
+                                </button>
+
+                                {filtroMovAbierto === 'observaciones' && (
+                                    <div className="users-filter-popover users-filter-popover-wide">
+                                        <input
+                                            value={filtroMovObservacion}
+                                            onChange={(e) => setFiltroMovObservacion(e.target.value)}
+                                            placeholder="Filtrar observación..."
+                                        />
+                                    </div>
+                                )}
+                            </th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {movimientosFiltrados.slice(0, 8).map((movimiento) => (
+                        {movimientosReporteFiltrados.slice(0, 8).map((movimiento) => (
                             <tr key={movimiento.id}>
                                 <td>{obtenerNombreProducto(movimiento.producto)}</td>
                                 <td>{movimiento.tipo}</td>
@@ -332,6 +507,14 @@ function ReportsPage() {
                                 <td>{movimiento.observaciones || 'Sin observaciones'}</td>
                             </tr>
                         ))}
+
+                        {movimientosReporteFiltrados.length === 0 && (
+                            <tr>
+                                <td colSpan="4" className="empty">
+                                    No hay movimientos con esos filtros.
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </section>

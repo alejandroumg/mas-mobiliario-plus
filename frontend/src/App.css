@@ -30,15 +30,21 @@ button:hover {
   display: flex;
   width: 100%;
   min-height: 100vh;
+  align-items: flex-start;
 }
 
 .sidebar {
+  position: sticky;
+  top: 0;
   width: 250px;
+  height: 100vh;
   min-height: 100vh;
   background: linear-gradient(180deg, #f59e0b, #e88a00);
   color: white;
   padding: 28px 20px;
   flex-shrink: 0;
+  overflow-y: auto;
+  align-self: flex-start;
 }
 
 .logo {
@@ -80,9 +86,13 @@ button:hover {
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
 }
 
-.content {
+.content,
+.main-content {
   flex: 1;
   min-width: 0;
+}
+
+.content {
   padding: 28px 45px;
   position: relative;
 }
@@ -4429,4 +4439,479 @@ td {
 .inventory-status.fuera_uso {
   background: #f3f4f6;
   color: #4b5563;
+}
+
+/* =========================
+   USUARIOS - mejoras visuales
+========================= */
+
+.users-layout-equal {
+  align-items: stretch;
+}
+
+.users-layout-equal .user-form-card,
+.users-layout-equal .users-registered-card {
+  height: 100%;
+}
+
+.users-registered-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+}
+
+.users-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.users-card-header h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 24px;
+}
+
+.users-search {
+  height: 44px;
+  min-width: 260px;
+  max-width: 340px;
+  flex: 0 1 340px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+}
+
+.users-search svg {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.users-search input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.users-table-scroll {
+  width: 100%;
+  overflow-x: hidden !important;
+}
+
+.users-clean-table {
+  width: 100%;
+  min-width: 0 !important;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.users-clean-table th,
+.users-clean-table td {
+  padding: 15px 14px;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+.users-clean-table th {
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.users-clean-table td {
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.users-registered-table th:nth-child(1),
+.users-registered-table td:nth-child(1) {
+  width: 21%;
+}
+
+.users-registered-table th:nth-child(2),
+.users-registered-table td:nth-child(2) {
+  width: 33%;
+}
+
+.users-registered-table th:nth-child(3),
+.users-registered-table td:nth-child(3) {
+  width: 17%;
+}
+
+.users-registered-table th:nth-child(4),
+.users-registered-table td:nth-child(4) {
+  width: 15%;
+}
+
+.users-registered-table th:nth-child(5),
+.users-registered-table td:nth-child(5) {
+  width: 14%;
+  text-align: center;
+}
+
+.users-actions {
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.users-table-footer {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.users-pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.users-pagination button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 10px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: #1f2937;
+}
+
+.users-pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.users-pagination strong {
+  color: #1f2937;
+  font-size: 13px;
+}
+
+.users-logs-card {
+  margin-top: 26px;
+  overflow: hidden !important;
+}
+
+.users-logs-header {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.users-log-search {
+  min-width: 320px;
+  max-width: 360px;
+}
+
+.logs-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr)) repeat(2, minmax(145px, 0.8fr)) 120px;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.logs-filters label {
+  display: grid;
+  gap: 6px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.logs-filters select,
+.users-date-input {
+  height: 42px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 0 12px;
+  color: #1f2937;
+  outline: none;
+}
+
+.users-date-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.users-date-input svg {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.users-date-input input {
+  border: none;
+  outline: none;
+  width: 100%;
+  background: transparent;
+  color: #1f2937;
+}
+
+.users-clear-btn {
+  align-self: flex-end;
+  height: 44px;
+  border: 1px solid #fed7aa;
+  background: #fff7ed;
+  color: #f59e0b;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.users-clear-btn:hover {
+  background: #ffedd5;
+}
+
+.users-logs-table th:nth-child(1),
+.users-logs-table td:nth-child(1) {
+  width: 13%;
+}
+
+.users-logs-table th:nth-child(2),
+.users-logs-table td:nth-child(2) {
+  width: 17%;
+}
+
+.users-logs-table th:nth-child(3),
+.users-logs-table td:nth-child(3) {
+  width: 20%;
+}
+
+.users-logs-table th:nth-child(4),
+.users-logs-table td:nth-child(4) {
+  width: 15%;
+}
+
+.users-logs-table th:nth-child(5),
+.users-logs-table td:nth-child(5) {
+  width: 35%;
+}
+
+@media (max-width: 1250px) {
+  .logs-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .users-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .users-search {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  .logs-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .users-table-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* =========================
+   USUARIOS - filtros tipo encabezado
+========================= */
+
+.users-title-search {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.users-title-search h2 {
+  white-space: nowrap;
+}
+
+.users-log-search {
+  align-self: flex-end;
+  margin-top: 20px;
+}
+
+.users-registered-card .users-card-header {
+  justify-content: flex-start;
+}
+
+.users-registered-card .users-search {
+  margin-left: 8px;
+}
+
+.logs-date-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.logs-date-header label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.logs-date-header .users-date-input {
+  width: 160px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.users-logs-card .users-table-scroll {
+  overflow: visible !important;
+}
+
+.users-logs-card table {
+  overflow: visible !important;
+}
+
+.users-logs-card th {
+  position: relative;
+  overflow: visible !important;
+}
+
+.users-th-filter {
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.users-th-filter:hover {
+  color: #f59e0b;
+}
+
+.users-filter-popover {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  width: 190px;
+  max-height: 230px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16);
+  padding: 8px;
+  z-index: 80;
+}
+
+.users-filter-popover-wide {
+  width: 230px;
+  display: grid;
+  gap: 8px;
+}
+
+.users-filter-popover button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.users-filter-popover button:hover {
+  background: #fff7ed;
+  color: #f59e0b;
+}
+
+.users-filter-popover label {
+  display: grid;
+  gap: 5px;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.users-filter-popover input {
+  height: 38px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0 10px;
+  outline: none;
+}
+
+@media (max-width: 1250px) {
+  .users-title-search {
+    width: 100%;
+  }
+
+  .users-logs-header {
+    align-items: flex-start;
+  }
+
+  .logs-date-header {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+}
+
+/* =========================
+   REPORTES - filtros en tabla de movimientos
+========================= */
+
+.reports-movements-card {
+  overflow: visible !important;
+}
+
+.reports-movements-card table,
+.reports-movements-card thead,
+.reports-movements-card tbody,
+.reports-movements-card tr {
+  overflow: visible !important;
+}
+
+.reports-movements-card th {
+  position: relative;
+  overflow: visible !important;
 }

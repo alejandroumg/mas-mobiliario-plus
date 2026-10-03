@@ -198,7 +198,7 @@ function DashboardPage({ irA }) {
   return (
     <main className="main-content dm-page">
       <div className="page-title">
-        <h1>Pantalla Principal del Sistema</h1>
+        <h1>Dashboard</h1>
       </div>
 
       <section className="dm-stats">

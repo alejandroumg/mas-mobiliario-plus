@@ -392,7 +392,7 @@ function RentalsList() {
   return (
     <>
       <div className="page-title">
-        <h1>Pantalla de Listado de Alquileres</h1>
+        <h1>Listado de Alquileres</h1>
       </div>
 
       <section className="filters">

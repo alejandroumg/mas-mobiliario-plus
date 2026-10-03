@@ -298,7 +298,7 @@ function App() {
         ) : (
           <section className="cm-page">
             <section className="cm-title">
-              <h1>Pantalla de Listado de Contactos</h1>
+              <h1>Listado de Contactos</h1>
             </section>
 
             <section className="cm-toolbar">
