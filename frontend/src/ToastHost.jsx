@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle, AlertTriangle, Info, X } from 'lucide-react'
 
+const TOAST_DURATION = 4760
+
 const getToastType = (message = '') => {
   const text = message.toLowerCase()
 
@@ -20,6 +22,9 @@ const getToastType = (message = '') => {
     text.includes('creado') ||
     text.includes('actualizado') ||
     text.includes('eliminado') ||
+    text.includes('confirmado') ||
+    text.includes('finalizado') ||
+    text.includes('cancelado') ||
     text.includes('correctamente') ||
     text.includes('listo')
   ) {
@@ -60,19 +65,40 @@ const playToastSound = (type) => {
 }
 
 function ToastHost() {
-  const [toast, setToast] = useState(null)
+  const [toasts, setToasts] = useState([])
+
+  const removeToast = (id) => {
+    setToasts((current) =>
+      current.map((toast) =>
+        toast.id === id ? { ...toast, leaving: true } : toast
+      )
+    )
+
+    setTimeout(() => {
+      setToasts((current) => current.filter((toast) => toast.id !== id))
+    }, 240)
+  }
 
   useEffect(() => {
     const nativeAlert = window.alert
 
     window.alert = (message) => {
       const type = getToastType(String(message))
-      setToast({
-        id: Date.now(),
+      const id = Date.now() + Math.random()
+
+      const newToast = {
+        id,
         message: String(message),
         type,
-      })
+        leaving: false,
+      }
+
+      setToasts((current) => [newToast, ...current].slice(0, 4))
       playToastSound(type)
+
+      setTimeout(() => {
+        removeToast(id)
+      }, TOAST_DURATION)
     }
 
     return () => {
@@ -80,49 +106,50 @@ function ToastHost() {
     }
   }, [])
 
-  useEffect(() => {
-    if (!toast) return
-
-    const timer = setTimeout(() => {
-      setToast(null)
-    }, 6400)
-
-    return () => clearTimeout(timer)
-  }, [toast])
-
-  if (!toast) return null
-
-  const Icon =
-    toast.type === 'success'
-      ? CheckCircle
-      : toast.type === 'error'
-        ? AlertTriangle
-        : Info
+  if (toasts.length === 0) return null
 
   return (
-    <div className={`toast-notification toast-${toast.type}`}>
-      <div className="toast-icon">
-        <Icon size={22} />
-      </div>
-
-      <div className="toast-content">
-        <strong>
-          {toast.type === 'success'
-            ? 'Operación exitosa'
+    <div className="toast-stack">
+      {toasts.map((toast) => {
+        const Icon =
+          toast.type === 'success'
+            ? CheckCircle
             : toast.type === 'error'
-              ? 'Revisa la información'
-              : 'Notificación'}
-        </strong>
-        <span>{toast.message}</span>
-      </div>
+              ? AlertTriangle
+              : Info
 
-      <button
-        type="button"
-        className="toast-close"
-        onClick={() => setToast(null)}
-      >
-        <X size={16} />
-      </button>
+        return (
+          <div
+            key={toast.id}
+            className={`toast-notification toast-${toast.type} ${
+              toast.leaving ? 'toast-leaving' : ''
+            }`}
+          >
+            <div className="toast-icon">
+              <Icon size={22} />
+            </div>
+
+            <div className="toast-content">
+              <strong>
+                {toast.type === 'success'
+                  ? 'Operación exitosa'
+                  : toast.type === 'error'
+                    ? 'Revisa la información'
+                    : 'Notificación'}
+              </strong>
+              <span>{toast.message}</span>
+            </div>
+
+            <button
+              type="button"
+              className="toast-close"
+              onClick={() => removeToast(toast.id)}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )
+      })}
     </div>
   )
 }
