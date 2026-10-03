@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { User, Calendar, Plus, Eye, Pencil, Lock, Unlock } from 'lucide-react'
+import { User, Calendar, Plus, Eye, Pencil, Lock, Unlock, Search, Tag, Clock, ChevronRight, ChevronLeft, UserCheck } from 'lucide-react'
 import logo from './assets/logo.png'
 import ContactForm from './ContactForm'
 import ContactDetail from './ContactDetail'
@@ -12,6 +12,7 @@ import DashboardPage from './DashboardPage'
 import LoginPage from './LoginPage'
 import './App.css'
 import ToastHost from './ToastHost'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import ConfirmHost from './ConfirmHost'
 
 const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api' 
@@ -45,6 +46,12 @@ function App() {
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('')
+  const [pagina, setPagina] = useState(1)
+  const [porPagina, setPorPagina] = useState(6)
+
+  useEffect(() => {
+    setPagina(1)
+  }, [busqueda, filtroEstado, filtroCategoria, porPagina])
 
   useEffect(() => {
     if (usuarioActual?.rol !== 'administrador' && pantalla === 'usuarios') {
@@ -88,6 +95,25 @@ function App() {
     return coincideBusqueda && coincideEstado && coincideCategoria
   })
 
+  const totalPaginas = Math.max(1, Math.ceil(contactosFiltrados.length / porPagina))
+  const paginaActual = Math.min(pagina, totalPaginas)
+  const inicio = (paginaActual - 1) * porPagina
+  const contactosPagina = contactosFiltrados.slice(inicio, inicio + porPagina)
+
+  const obtenerPaginas = () => {
+    if (totalPaginas <= 5) {
+      return Array.from({ length: totalPaginas }, (_, i) => i + 1)
+    }
+    const paginas = [1]
+    const desde = Math.max(2, paginaActual - 1)
+    const hasta = Math.min(totalPaginas - 1, paginaActual + 1)
+    if (desde > 2) paginas.push('...')
+    for (let i = desde; i <= hasta; i++) paginas.push(i)
+    if (hasta < totalPaginas - 1) paginas.push('...')
+    paginas.push(totalPaginas)
+    return paginas
+  }
+
   const cambiarEstadoContacto = async (contacto) => {
     const nuevoEstado = contacto.estado === 'activo' ? 'inactivo' : 'activo'
 
@@ -105,6 +131,43 @@ function App() {
 
   if (!usuarioActual) {
     return <LoginPage onLogin={iniciarSesion} />
+  }
+
+
+  // Datos visuales para listado de contactos estilo mockup
+  const coloresCategoriasContactos = ['#f59e0b', '#a855f7', '#60a5fa', '#fb7185', '#94a3b8', '#22c55e']
+
+  const contactosRecientes = [...contactos]
+    .sort((a, b) => (b.id || 0) - (a.id || 0))
+    .slice(0, 5)
+
+  const datosCategoriasContacto = categorias
+    .map((cat, index) => ({
+      id: cat.id,
+      nombre: cat.nombre,
+      cantidad: contactos.filter((contacto) => String(contacto.categoria) === String(cat.id)).length,
+      color: coloresCategoriasContactos[index % coloresCategoriasContactos.length],
+    }))
+    .filter((cat) => cat.cantidad > 0)
+
+  const coloresCategoriasMap = Object.fromEntries(
+    datosCategoriasContacto.map((categoria) => [categoria.id, categoria.color])
+  )
+
+  const totalContactosGrafica = datosCategoriasContacto.reduce(
+    (total, cat) => total + cat.cantidad,
+    0
+  )
+
+  const obtenerInicialesContacto = (nombre = '') => {
+    const partes = nombre.trim().split(' ').filter(Boolean)
+    if (partes.length === 0) return 'CN'
+    if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase()
+    return `${partes[0][0]}${partes[1][0]}`.toUpperCase()
+  }
+
+  const obtenerCorreoContacto = (contacto) => {
+    return contacto.correo || contacto.email || contacto.correo_electronico || 'Sin correo registrado'
   }
 
   return (
@@ -233,147 +296,357 @@ function App() {
             <h1>Configuración</h1>
           </div>
         ) : (
-          <>
-            <section className="page-title">
+          <section className="cm-page">
+            <section className="cm-title">
               <h1>Pantalla de Listado de Contactos</h1>
             </section>
 
-            <section className="filters">
-              <input
-                placeholder="Buscar contacto..."
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-              />
+            <section className="cm-toolbar">
+              <label className="cm-search">
+                <Search size={19} />
+                <input
+                  placeholder="Buscar contacto, teléfono o categoría..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+              </label>
 
-              <select
-                value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
-              >
-                <option value="">Todas las categorías</option>
-                {categorias.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.nombre}
-                  </option>
-                ))}
-              </select>
+              <label className="cm-filter">
+                <span>Categoría</span>
+                <select
+                  value={filtroCategoria}
+                  onChange={(e) => setFiltroCategoria(e.target.value)}
+                >
+                  <option value="">Todas</option>
+                  {categorias.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-              <select
-                value={filtroEstado}
-                onChange={(e) => setFiltroEstado(e.target.value)}
-              >
-                <option value="">Todos los estados</option>
-                <option value="activo">Activo</option>
-                <option value="inactivo">Inactivo</option>
-                <option value="seguimiento">Seguimiento</option>
-              </select>
+              <label className="cm-filter">
+                <span>Estado</span>
+                <select
+                  value={filtroEstado}
+                  onChange={(e) => setFiltroEstado(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                  <option value="seguimiento">Seguimiento</option>
+                </select>
+              </label>
 
               <button
+                className="cm-primary-btn"
                 onClick={() => {
                   setContactoEditando(null)
                   setPantalla('registro')
                 }}
               >
-                <Plus size={18} /> Nuevo contacto
+                <Plus size={19} />
+                Nuevo contacto
               </button>
             </section>
 
-            <section className="cards">
-              <div className="card">
-                <User />
-                <h3>Total contactos</h3>
-                <strong>{contactos.length}</strong>
-              </div>
+            <section className="cm-stats">
+              <article className="cm-stat">
+                <div className="cm-stat-icon">
+                  <User size={26} />
+                </div>
 
-              <div className="card">
-                <User />
-                <h3>Activos</h3>
-                <strong>{activos}</strong>
-              </div>
+                <div>
+                  <p>Total contactos</p>
+                  <strong>{contactos.length}</strong>
+                  <span>Todos los registros</span>
+                </div>
+              </article>
 
-              <div className="card">
-                <Calendar />
-                <h3>Categorías</h3>
-                <strong>{categorias.length}</strong>
-              </div>
+              <article className="cm-stat">
+                <div className="cm-stat-icon success">
+                  <UserCheck size={26} />
+                </div>
+
+                <div>
+                  <p>Activos</p>
+                  <strong>{activos}</strong>
+                  <span>Clientes disponibles</span>
+                </div>
+              </article>
+
+              <article className="cm-stat">
+                <div className="cm-stat-icon">
+                  <Tag size={26} />
+                </div>
+
+                <div>
+                  <p>Categorías</p>
+                  <strong>{categorias.length}</strong>
+                  <span>Tipos de clasificación</span>
+                </div>
+              </article>
             </section>
 
-            <section className="table-card">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Teléfono</th>
-                    <th>Dirección</th>
-                    <th>Categoría</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
+            <section className="cm-layout">
+              <article className="cm-table-card">
+                <div className="cm-table-scroll">
+                  <table className="cm-table">
+                    <colgroup>
+                      <col style={{ width: '27%' }} />
+                      <col style={{ width: '13%' }} />
+                      <col style={{ width: '22%' }} />
+                      <col style={{ width: '14%' }} />
+                      <col style={{ width: '10%' }} />
+                      <col style={{ width: '14%' }} />
+                    </colgroup>
 
-                <tbody>
-                  {contactosFiltrados.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="empty">
-                        Aún no hay contactos registrados
-                      </td>
-                    </tr>
-                  ) : (
-                    contactosFiltrados.map((contacto) => (
-                      <tr key={contacto.id}>
-                        <td>{contacto.nombre}</td>
-                        <td>{contacto.telefono}</td>
-                        <td>{contacto.direccion || 'Sin dirección'}</td>
-                        <td>{categoriasMap[contacto.categoria] || 'Sin categoría'}</td>
-                        <td>{contacto.estado}</td>
-                        <td className="contact-actions">
-                          <button
-                            className="icon-action-btn"
-                            data-tooltip="Ver contacto"
-                            onClick={() => {
-                              setContactoSeleccionado(contacto)
-                              setPantalla('detalle')
-                            }}
-                          >
-                            <Eye size={18} />
-                          </button>
-
-                          <button
-                            className="icon-action-btn"
-                            data-tooltip="Editar contacto"
-                            onClick={() => {
-                              setContactoEditando(contacto)
-                              setPantalla('registro')
-                            }}
-                          >
-                            <Pencil size={18} />
-                          </button>
-
-                          <button
-                            className={`icon-action-btn ${contacto.estado === 'activo'
-                              ? 'danger-icon-btn'
-                              : 'success-icon-btn'
-                              }`}
-                            data-tooltip={
-                              contacto.estado === 'activo'
-                                ? 'Desactivar contacto'
-                                : 'Activar contacto'
-                            }
-                            onClick={() => cambiarEstadoContacto(contacto)}
-                          >
-                            {contacto.estado === 'activo' ? (
-                              <Lock size={18} />
-                            ) : (
-                              <Unlock size={18} />
-                            )}
-                          </button>
-                        </td>
+                    <thead>
+                      <tr>
+                        <th>Nombre</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Categoría</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                       </tr>
-                    ))
+                    </thead>
+
+                    <tbody>
+                      {contactosPagina.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="empty">
+                            Aún no hay contactos registrados
+                          </td>
+                        </tr>
+                      ) : (
+                        contactosPagina.map((contacto) => (
+                          <tr key={contacto.id}>
+                            <td>
+                              <div className="cm-contact-cell">
+                                <span className="cm-avatar">
+                                  {obtenerInicialesContacto(contacto.nombre)}
+                                </span>
+                                <div>
+                                  <strong>{contacto.nombre}</strong>
+                                  <small>{obtenerCorreoContacto(contacto)}</small>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td>{contacto.telefono}</td>
+                            <td>
+                              <span className="cm-address">{contacto.direccion || 'Sin dirección'}</span>
+                            </td>
+
+                            <td>
+                              <span
+                                className="cm-category-pill"
+                                style={{ '--category-color': coloresCategoriasMap[contacto.categoria] || '#94a3b8' }}
+                              >
+                                {categoriasMap[contacto.categoria] || 'Sin categoría'}
+                              </span>
+                            </td>
+
+                            <td>
+                              <span className={`cm-status cm-status--${contacto.estado}`}>
+                                {contacto.estado}
+                              </span>
+                            </td>
+
+                            <td className="cm-actions-cell">
+                              <div className="cm-actions">
+                                <button
+                                  className="icon-action-btn"
+                                  data-tooltip="Ver contacto"
+                                  onClick={() => {
+                                    setContactoSeleccionado(contacto)
+                                    setPantalla('detalle')
+                                  }}
+                                >
+                                  <Eye size={18} />
+                                </button>
+
+                                <button
+                                  className="icon-action-btn"
+                                  data-tooltip="Editar contacto"
+                                  onClick={() => {
+                                    setContactoEditando(contacto)
+                                    setPantalla('registro')
+                                  }}
+                                >
+                                  <Pencil size={18} />
+                                </button>
+
+                                <button
+                                  className={`icon-action-btn ${
+                                    contacto.estado === 'activo' ? 'danger-icon-btn' : 'success-icon-btn'
+                                  }`}
+                                  data-tooltip={
+                                    contacto.estado === 'activo' ? 'Desactivar contacto' : 'Activar contacto'
+                                  }
+                                  onClick={() => cambiarEstadoContacto(contacto)}
+                                >
+                                  {contacto.estado === 'activo' ? <Lock size={18} /> : <Unlock size={18} />}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="cm-table-footer">
+                  <span className="cm-showing">
+                    {contactosFiltrados.length === 0
+                      ? 'Mostrando 0 contactos'
+                      : `Mostrando ${inicio + 1} a ${Math.min(inicio + porPagina, contactosFiltrados.length)} de ${contactosFiltrados.length} contactos`}
+                  </span>
+
+                  <div className="cm-pagination">
+                    <button
+                      type="button"
+                      disabled={paginaActual === 1}
+                      onClick={() => setPagina(paginaActual - 1)}
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+
+                    {obtenerPaginas().map((p, i) =>
+                      p === '...' ? (
+                        <span key={`dots-${i}`} className="cm-page-dots">…</span>
+                      ) : (
+                        <button
+                          type="button"
+                          key={p}
+                          className={p === paginaActual ? 'active' : ''}
+                          onClick={() => setPagina(p)}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
+
+                    <button
+                      type="button"
+                      disabled={paginaActual === totalPaginas}
+                      onClick={() => setPagina(paginaActual + 1)}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+
+                  <select
+                    className="cm-per-page"
+                    value={porPagina}
+                    onChange={(e) => setPorPagina(Number(e.target.value))}
+                  >
+                    <option value={6}>6 por página</option>
+                    <option value={10}>10 por página</option>
+                    <option value={20}>20 por página</option>
+                  </select>
+                </div>
+              </article>
+
+              <aside className="cm-side">
+                <section className="cm-side-card">
+                  <div className="cm-side-head">
+                    <Clock size={18} />
+                    <h2>Actividad reciente</h2>
+                  </div>
+
+                  <div className="cm-activity-list">
+                    {contactosRecientes.length === 0 ? (
+                      <p className="cm-empty">No hay actividad reciente.</p>
+                    ) : (
+                      contactosRecientes.map((contacto) => (
+                        <div className="cm-activity-item" key={contacto.id}>
+                          <span className="cm-activity-icon">
+                            <User size={16} />
+                          </span>
+
+                          <div>
+                            <strong>Contacto registrado</strong>
+                            <p>{contacto.nombre}</p>
+                          </div>
+
+                          <small>Reciente</small>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <button className="cm-side-link">
+                    Ver toda la actividad
+                    <ChevronRight size={15} />
+                  </button>
+                </section>
+
+                <section className="cm-side-card">
+                  <div className="cm-side-head">
+                    <Tag size={18} />
+                    <h2>Clasificación por categoría</h2>
+                  </div>
+
+                  {totalContactosGrafica === 0 ? (
+                    <p className="cm-empty">No hay datos para mostrar.</p>
+                  ) : (
+                    <>
+                      <div className="cm-donut">
+                        <div className="cm-donut-box">
+                          <ResponsiveContainer width="100%" height={160}>
+                            <PieChart>
+                              <Pie
+                                data={datosCategoriasContacto}
+                                dataKey="cantidad"
+                                nameKey="nombre"
+                                innerRadius={45}
+                                outerRadius={67}
+                                paddingAngle={3}
+                              >
+                                {datosCategoriasContacto.map((item) => (
+                                  <Cell key={item.id} fill={item.color} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </PieChart>
+                          </ResponsiveContainer>
+
+                          <div className="cm-donut-center">
+                            <strong>{contactos.length}</strong>
+                            <span>Total</span>
+                          </div>
+                        </div>
+
+                        <div className="cm-legend">
+                          {datosCategoriasContacto.map((item) => (
+                            <p key={item.id}>
+                              <i style={{ background: item.color }} />
+                              <span>{item.nombre}</span>
+                              <strong>
+                                {item.cantidad}
+                                <small>
+                                  ({Math.round((item.cantidad / totalContactosGrafica) * 100)}%)
+                                </small>
+                              </strong>
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button className="cm-side-link">
+                        Ver reporte completo
+                        <ChevronRight size={15} />
+                      </button>
+                    </>
                   )}
-                </tbody>
-              </table>
+                </section>
+              </aside>
             </section>
-          </>
+          </section>
         )}
       </main>
     </div>
